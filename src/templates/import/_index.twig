@@ -1,0 +1,162 @@
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Import'|t('trackr') %}
+{% set selectedSubnavItem = 'import' %}
+
+{% block content %}
+    {% if preview %}
+        {# --- step two: what the file would do --------------------------------- #}
+        <div class="pane">
+            <h2>{{ '{file}'|t('trackr', { file: filename ?? 'Uploaded file'|t('trackr') }) }}</h2>
+
+            {% if preview.error %}
+                <p class="error">{{ preview.error }}</p>
+                <a class="btn" href="{{ url('trackr/import') }}">{{ 'Start again'|t('trackr') }}</a>
+            {% else %}
+                <p>
+                    {{ '{total} rows: {ready} ready, {problems} with problems.'|t('trackr', {
+                        total: preview.summary.total,
+                        ready: preview.summary.ready,
+                        problems: preview.summary.problems
+                    }) }}
+                </p>
+
+                <table class="data fullwidth">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="thin">{{ 'Line'|t('trackr') }}</th>
+                            <th scope="col">{{ 'Order'|t('trackr') }}</th>
+                            <th scope="col">{{ 'Tracking number'|t('trackr') }}</th>
+                            <th scope="col">{{ 'Carrier'|t('trackr') }}</th>
+                            <th scope="col">{{ 'Status'|t('trackr') }}</th>
+                            <th scope="col">{{ 'Notes'|t('trackr') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview.rows %}
+                            <tr>
+                                <td class="thin light">{{ row._line }}</td>
+                                <td>
+                                    {% if row.orderId %}
+                                        <span class="status green"></span>{{ row.orderReference ?? row.orderNumber }}
+                                    {% else %}
+                                        <span class="status red"></span>{{ row.orderNumber ?: '—' }}
+                                    {% endif %}
+                                </td>
+                                <td class="code">{{ row.trackingNumber ?: '—' }}</td>
+                                <td>{{ row.providerLabel ?: '—' }}</td>
+                                <td>{{ row.status }}</td>
+                                <td>
+                                    {% for error in row.errors %}<div class="error">{{ error }}</div>{% endfor %}
+                                    {% for warning in row.warnings %}<div class="light">{{ warning }}</div>{% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <form method="post" accept-charset="UTF-8" style="margin-top: 18px;">
+                    {{ csrfInput() }}
+                    {{ actionInput('trackr/import/commit') }}
+                    {{ hiddenInput('token', token) }}
+
+                    {% if isPro %}
+                        {{ forms.checkboxField({
+                            label: 'Email each customer their tracking'|t('trackr'),
+                            name: 'notify'
+                        }) }}
+                    {% endif %}
+
+                    <div class="buttons">
+                        <button type="submit" class="btn submit">
+                            {{ 'Import {count} rows'|t('trackr', { count: preview.summary.ready }) }}
+                        </button>
+                        <a class="btn" href="{{ url('trackr/import') }}">{{ 'Cancel'|t('trackr') }}</a>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    {% else %}
+        {# --- step one: upload -------------------------------------------------- #}
+        <div class="pane">
+            <h2>{{ 'Upload a CSV'|t('trackr') }}</h2>
+            <p class="light">
+                {{ 'Trackr reads the header row and works out the columns for you. Nothing is written until you have seen what would happen.'|t('trackr') }}
+            </p>
+
+            <form method="post" accept-charset="UTF-8" enctype="multipart/form-data">
+                {{ csrfInput() }}
+                {{ actionInput('trackr/import/preview') }}
+
+                <div class="field">
+                    <input type="file" name="file" accept=".csv,text/csv,text/plain">
+                </div>
+
+                <div class="buttons">
+                    <button type="submit" class="btn submit">{{ 'Preview'|t('trackr') }}</button>
+                    <a class="btn" href="{{ actionUrl('trackr/import/sample') }}">{{ 'Download a sample'|t('trackr') }}</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="pane">
+            <h2>{{ 'Columns'|t('trackr') }}</h2>
+            <p class="light">{{ 'Any of these header names work, in any order. Only the order number is required.'|t('trackr') }}</p>
+
+            <table class="data fullwidth">
+                <thead>
+                    <tr>
+                        <th scope="col">{{ 'Field'|t('trackr') }}</th>
+                        <th scope="col">{{ 'Header names accepted'|t('trackr') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for field, names in aliases %}
+                        <tr>
+                            <td><code>{{ field }}</code></td>
+                            <td class="light">{{ names|join(', ') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p class="light" style="margin-top: 10px;">
+                {{ 'Status values: {statuses}'|t('trackr', { statuses: statuses|keys|join(', ') }) }}
+            </p>
+        </div>
+
+        {% if isPro %}
+            <div class="pane">
+                <h2>{{ 'Watched folder'|t('trackr') }}</h2>
+                {% if settings.getParsedWatchPath() %}
+                    <p>{{ 'Trackr imports every CSV dropped into'|t('trackr') }} <code>{{ settings.getParsedWatchPath() }}</code>.</p>
+                    <p class="light">{{ 'Run it from cron with `php craft trackr/import/watch`, or now:'|t('trackr') }}</p>
+                    <div class="buttons">
+                        <button type="button" class="btn" id="trackr-run-watch">{{ 'Run now'|t('trackr') }}</button>
+                    </div>
+                {% else %}
+                    <p class="light">{{ 'Set a watched folder in Settings → Trackr to import supplier CSVs on a schedule.'|t('trackr') }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% js %}
+(function() {
+    var button = document.getElementById('trackr-run-watch');
+    if (!button) { return; }
+
+    button.addEventListener('click', function() {
+        button.classList.add('loading');
+        Craft.sendActionRequest('POST', 'trackr/import/run-watch')
+            .then(function(response) {
+                var data = response.data;
+                Craft.cp.displayNotice(data.files + ' file(s), ' + data.imported + ' added, ' + data.updated + ' updated.');
+            })
+            .catch(function() { Craft.cp.displayError({{ 'The watched folder couldn’t be read.'|t('trackr')|json_encode|raw }}); })
+            .finally(function() { button.classList.remove('loading'); });
+    });
+})();
+{% endjs %}

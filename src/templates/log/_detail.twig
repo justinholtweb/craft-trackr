@@ -1,0 +1,48 @@
+{% extends '_layouts/cp' %}
+
+{% set title = entry.summary ?? 'Log entry'|t('trackr') %}
+{% set selectedSubnavItem = 'log' %}
+{% set crumbs = [
+    { label: 'Log'|t('trackr'), url: url('trackr/log') }
+] %}
+
+{% block content %}
+    <div class="pane">
+        <table class="data fullwidth">
+            <tbody>
+                <tr><th scope="row">{{ 'When'|t('trackr') }}</th><td>{{ entry.dateCreated ? entry.dateCreated|datetime('long') : '—' }}</td></tr>
+                <tr><th scope="row">{{ 'Action'|t('trackr') }}</th><td><code>{{ entry.action }}</code></td></tr>
+                <tr>
+                    <th scope="row">{{ 'Level'|t('trackr') }}</th>
+                    <td><span class="status {{ entry.getLevelColor() }}"></span>{{ entry.level }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">{{ 'Order'|t('trackr') }}</th>
+                    <td>
+                        {% if order %}
+                            <a href="{{ order.getCpEditUrl() }}">{{ order.reference ?? order.shortNumber }}</a>
+                        {% else %}
+                            <span class="light">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr><th scope="row">{{ 'Source'|t('trackr') }}</th><td>{{ entry.source ?? '—' }}</td></tr>
+                <tr><th scope="row">{{ 'IP'|t('trackr') }}</th><td>{{ entry.ip ?? '—' }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if entry.message %}
+        <div class="pane">
+            <h2>{{ 'Message'|t('trackr') }}</h2>
+            <pre style="white-space: pre-wrap; word-break: break-word;">{{ entry.message }}</pre>
+        </div>
+    {% endif %}
+
+    {% if entry.payload %}
+        <div class="pane">
+            <h2>{{ 'Payload'|t('trackr') }}</h2>
+            <pre style="white-space: pre-wrap; word-break: break-word;">{{ entry.payload }}</pre>
+        </div>
+    {% endif %}
+{% endblock %}

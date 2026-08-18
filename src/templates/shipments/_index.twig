@@ -1,0 +1,101 @@
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Shipments'|t('trackr') %}
+{% set selectedSubnavItem = 'shipments' %}
+
+{% block content %}
+    <form method="get" action="{{ url('trackr/shipments') }}" class="flex" style="gap: 10px; margin-bottom: 16px; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1 1 260px;">
+            {{ forms.text({
+                name: 'search',
+                value: filters.search,
+                placeholder: 'Search tracking number, carrier, service or note'|t('trackr'),
+                class: 'text fullwidth'
+            }) }}
+        </div>
+        <div style="min-width: 170px;">
+            {{ forms.select({
+                name: 'status',
+                value: filters.status,
+                options: [{ label: 'Any status'|t('trackr'), value: '' }]|merge(statusOptions)
+            }) }}
+        </div>
+        <div style="min-width: 200px;">
+            {{ forms.select({
+                name: 'provider',
+                value: filters.provider,
+                options: [{ label: 'Any carrier'|t('trackr'), value: '' }]|merge(providerOptions|filter(o => o.value != ''))
+            }) }}
+        </div>
+        <div>
+            <button type="submit" class="btn">{{ 'Filter'|t('trackr') }}</button>
+        </div>
+    </form>
+
+    {% if shipments|length %}
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    <th scope="col">{{ 'Order'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Carrier'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Tracking number'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Status'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Shipped'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Units'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Source'|t('trackr') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for shipment in shipments %}
+                    {% set order = orders[shipment.orderId] ?? null %}
+                    <tr>
+                        <td>
+                            {% if order %}
+                                <a href="{{ order.getCpEditUrl() }}">{{ order.reference ?? order.shortNumber }}</a>
+                            {% else %}
+                                <span class="light">#{{ shipment.orderId }}</span>
+                            {% endif %}
+                        </td>
+                        <td><a href="{{ url('trackr/shipments/' ~ shipment.id) }}">{{ shipment.getProviderLabel() ?: '—' }}</a></td>
+                        <td>
+                            {% set trackingUrl = shipment.getTrackingUrl() %}
+                            {% if trackingUrl %}
+                                <a href="{{ trackingUrl }}" rel="noopener noreferrer" target="_blank" class="code">{{ shipment.trackingNumber }}</a>
+                            {% else %}
+                                <span class="code">{{ shipment.trackingNumber ?? '—' }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status {{ shipment.getStatusColor() }}"></span>
+                            {{ shipment.getStatusLabel()|t('trackr') }}
+                        </td>
+                        <td>{{ shipment.shipDate ? shipment.shipDate|date('short') : '—' }}</td>
+                        <td>{{ shipment.getQty() ?: '—' }}</td>
+                        <td><span class="light">{{ shipment.source }}</span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% set pages = (total / perPage)|round(0, 'ceil') %}
+        {% if pages > 1 %}
+            <div class="flex" style="margin-top: 16px; gap: 8px; align-items: center;">
+                {% if page > 1 %}
+                    <a class="btn" href="{{ url('trackr/shipments', filters|merge({ page: page - 1 })) }}">{{ '← Previous'|t('trackr') }}</a>
+                {% endif %}
+                <span class="light">{{ 'Page {page} of {pages}'|t('trackr', { page: page, pages: pages }) }}</span>
+                {% if page < pages %}
+                    <a class="btn" href="{{ url('trackr/shipments', filters|merge({ page: page + 1 })) }}">{{ 'Next →'|t('trackr') }}</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="pane">
+            <p>{{ 'No shipments yet.'|t('trackr') }}</p>
+            <p class="light">
+                {{ 'Tracking is added on an order’s edit screen, imported from a CSV, or posted to the API.'|t('trackr') }}
+            </p>
+        </div>
+    {% endif %}
+{% endblock %}

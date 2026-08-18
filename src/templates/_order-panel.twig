@@ -1,0 +1,221 @@
+{#
+    Rendered into Commerce's own order edit screen through the `cp.commerce.order.edit.details`
+    hook.
+
+    That screen is itself a <form>, so nothing here may be one — every action posts through
+    Craft.sendActionRequest instead.
+#}
+{% import '_includes/forms' as forms %}
+
+<div class="trackr-panel" style="margin-top: 24px;">
+    <h3>{{ 'Tracking'|t('trackr') }}</h3>
+
+    {% if shipments|length %}
+        <table class="data fullwidth" style="margin-bottom: 10px;">
+            <thead>
+                <tr>
+                    <th scope="col">{{ 'Carrier'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Tracking number'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Status'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Shipped'|t('trackr') }}</th>
+                    {% if canManage %}<th scope="col" class="thin"></th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for shipment in shipments %}
+                    <tr data-trackr-row="{{ shipment.id }}">
+                        <td>
+                            <a href="{{ url('trackr/shipments/' ~ shipment.id) }}">{{ shipment.getProviderLabel() ?: '—' }}</a>
+                            {% if shipment.service %}<span class="light"> · {{ shipment.service }}</span>{% endif %}
+                        </td>
+                        <td>
+                            {% set trackingUrl = shipment.getTrackingUrl() %}
+                            {% if trackingUrl %}
+                                <a href="{{ trackingUrl }}" rel="noopener noreferrer" target="_blank">{{ shipment.trackingNumber }}</a>
+                            {% else %}
+                                {{ shipment.trackingNumber ?? '—' }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status {{ shipment.getStatusColor() }}"></span>
+                            {{ shipment.getStatusLabel()|t('trackr') }}
+                        </td>
+                        <td>{{ shipment.shipDate ? shipment.shipDate|date('short') : '—' }}</td>
+                        {% if canManage %}
+                            <td class="thin">
+                                <button type="button" class="btn small" data-trackr-delete="{{ shipment.id }}">{{ 'Delete'|t('trackr') }}</button>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <p class="light" style="margin-bottom: 14px;">
+            {% if progress.total %}
+                {{ '{shipped} of {total} units shipped.'|t('trackr', { shipped: progress.shipped, total: progress.total }) }}
+            {% else %}
+                {{ '{count} shipment(s) recorded.'|t('trackr', { count: progress.shipmentCount }) }}
+            {% endif %}
+            {% if state.dateDelivered %}
+                {{ 'Delivered {date}.'|t('trackr', { date: state.dateDelivered|date('short') }) }}
+            {% endif %}
+        </p>
+    {% else %}
+        <p class="light">{{ 'No tracking recorded for this order yet.'|t('trackr') }}</p>
+    {% endif %}
+
+    {% if canManage %}
+        <div id="trackr-add" class="pane" style="margin-top: 12px;">
+            <div class="flex flex-nowrap" style="gap: 12px; align-items: flex-start; flex-wrap: wrap;">
+                <div style="min-width: 200px;">
+                    {{ forms.selectField({
+                        label: 'Carrier'|t('trackr'),
+                        id: 'trackr-provider',
+                        name: 'provider',
+                        options: providerOptions,
+                        value: settings.defaultProvider
+                    }) }}
+                </div>
+                <div style="min-width: 240px;">
+                    {{ forms.textField({
+                        label: 'Tracking number'|t('trackr'),
+                        id: 'trackr-tracking-number',
+                        name: 'trackingNumber',
+                        class: 'code'
+                    }) }}
+                </div>
+                <div style="min-width: 160px;">
+                    {{ forms.textField({
+                        label: 'Service'|t('trackr'),
+                        id: 'trackr-service',
+                        name: 'service',
+                        placeholder: 'Ground'
+                    }) }}
+                </div>
+                <div style="min-width: 160px;">
+                    {{ forms.dateField({
+                        label: 'Ship date'|t('trackr'),
+                        id: 'trackr-ship-date',
+                        name: 'shipDate'
+                    }) }}
+                </div>
+                <div style="min-width: 160px;">
+                    {{ forms.selectField({
+                        label: 'Status'|t('trackr'),
+                        id: 'trackr-status',
+                        name: 'status',
+                        options: statusOptions,
+                        value: settings.defaultShipmentStatus
+                    }) }}
+                </div>
+            </div>
+
+            {% if isPro %}
+                {% set shippableItems = order.lineItems|filter(li => unshipped[li.id] is defined) %}
+                {% if shippableItems|length > 1 %}
+                    <div class="field">
+                        <div class="heading"><label>{{ 'Items in this shipment'|t('trackr') }}</label></div>
+                        <div class="instructions"><p>{{ 'Leave every quantity at zero to ship whatever is left.'|t('trackr') }}</p></div>
+                        <table class="data fullwidth">
+                            <tbody>
+                                {% for lineItem in shippableItems %}
+                                    <tr>
+                                        <td>{{ lineItem.description }} <span class="light">{{ lineItem.sku }}</span></td>
+                                        <td class="thin light">{{ 'x{qty} remaining'|t('trackr', { qty: unshipped[lineItem.id] }) }}</td>
+                                        <td class="thin">
+                                            <input type="number" class="text" style="width: 70px;"
+                                                   min="0" max="{{ unshipped[lineItem.id] }}" value="0"
+                                                   data-trackr-item="{{ lineItem.id }}">
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {{ forms.checkboxField({
+                    label: 'This shipment covers only part of the order'|t('trackr'),
+                    instructions: 'Keeps the order at the partially shipped status until the rest is entered.'|t('trackr'),
+                    id: 'trackr-partial',
+                    name: 'partial'
+                }) }}
+            {% endif %}
+
+            <div class="buttons">
+                <button type="button" class="btn submit" id="trackr-add-button">{{ 'Add tracking'|t('trackr') }}</button>
+                <span class="light" id="trackr-add-note"></span>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% js %}
+(function() {
+    var orderId = {{ order.id }};
+
+    function val(id) {
+        var el = document.getElementById(id);
+        return el ? el.value : '';
+    }
+
+    var addButton = document.getElementById('trackr-add-button');
+
+    if (addButton) {
+        addButton.addEventListener('click', function() {
+            var data = {
+                orderId: orderId,
+                provider: val('trackr-provider'),
+                trackingNumber: val('trackr-tracking-number'),
+                service: val('trackr-service'),
+                shipDate: val('trackr-ship-date'),
+                status: val('trackr-status'),
+                partial: document.getElementById('trackr-partial') && document.getElementById('trackr-partial').checked ? 1 : 0,
+                items: {}
+            };
+
+            document.querySelectorAll('[data-trackr-item]').forEach(function(input) {
+                var qty = parseInt(input.value, 10);
+                if (qty > 0) {
+                    data.items[input.getAttribute('data-trackr-item')] = qty;
+                }
+            });
+
+            addButton.classList.add('loading');
+
+            Craft.sendActionRequest('POST', 'trackr/shipments/save', { data: data })
+                .then(function(response) {
+                    Craft.cp.displayNotice(response.data.message || {{ 'Tracking added.'|t('trackr')|json_encode|raw }});
+                    window.location.reload();
+                })
+                .catch(function(e) {
+                    Craft.cp.displayError(
+                        (e.response && e.response.data && e.response.data.message)
+                        || {{ 'Couldn’t save that tracking.'|t('trackr')|json_encode|raw }}
+                    );
+                })
+                .finally(function() { addButton.classList.remove('loading'); });
+        });
+    }
+
+    document.querySelectorAll('[data-trackr-delete]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var shipmentId = button.getAttribute('data-trackr-delete');
+
+            if (!confirm({{ 'Delete this tracking number?'|t('trackr')|json_encode|raw }})) {
+                return;
+            }
+
+            button.classList.add('loading');
+
+            Craft.sendActionRequest('POST', 'trackr/shipments/delete', { data: { shipmentId: shipmentId } })
+                .then(function() { window.location.reload(); })
+                .catch(function() {
+                    button.classList.remove('loading');
+                    Craft.cp.displayError({{ 'Couldn’t delete that shipment.'|t('trackr')|json_encode|raw }});
+                });
+        });
+    });
+})();
+{% endjs %}

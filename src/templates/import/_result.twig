@@ -1,0 +1,51 @@
+{% extends '_layouts/cp' %}
+
+{% set title = 'Import results'|t('trackr') %}
+{% set selectedSubnavItem = 'import' %}
+{% set crumbs = [
+    { label: 'Import'|t('trackr'), url: url('trackr/import') }
+] %}
+
+{% block content %}
+    <div class="pane">
+        <p>
+            {{ '{imported} added, {updated} updated, {failed} failed.'|t('trackr', {
+                imported: result.imported,
+                updated: result.updated,
+                failed: result.failed
+            }) }}
+        </p>
+
+        <table class="data fullwidth">
+            <thead>
+                <tr>
+                    <th scope="col" class="thin">{{ 'Line'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Order'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Tracking number'|t('trackr') }}</th>
+                    <th scope="col">{{ 'Result'|t('trackr') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in result.rows %}
+                    <tr>
+                        <td class="thin light">{{ row._line }}</td>
+                        <td>{{ row.orderReference ?? row.orderNumber }}</td>
+                        <td class="code">{{ row.trackingNumber ?: '—' }}</td>
+                        <td>
+                            {% if row.errors|length %}
+                                <span class="status red"></span>{{ row.errors|join(' ') }}
+                            {% else %}
+                                <span class="status green"></span>{{ row.result ?? 'imported'|t('trackr') }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="buttons" style="margin-top: 16px;">
+            <a class="btn" href="{{ url('trackr/import') }}">{{ 'Import another'|t('trackr') }}</a>
+            <a class="btn submit" href="{{ url('trackr/shipments') }}">{{ 'See shipments'|t('trackr') }}</a>
+        </div>
+    </div>
+{% endblock %}

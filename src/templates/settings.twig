@@ -1,0 +1,518 @@
+{% import '_includes/forms' as forms %}
+
+{% set isPro = plugin.isPro() %}
+{% set commerceReady = craft.app.plugins.isPluginEnabled('commerce') %}
+{% set statusOptions = commerceReady ? plugin.statuses.getStatusOptions() : {} %}
+
+{% set statusList = [{ label: 'Leave the status alone'|t('trackr'), value: '' }] %}
+{% for handle, name in statusOptions %}
+    {% set statusList = statusList|merge([{ label: name, value: handle }]) %}
+{% endfor %}
+
+{% if not commerceReady %}
+    <div class="pane">
+        <p class="error">{{ 'Craft Commerce is not installed or enabled. Trackr needs it to do anything.'|t('trackr') }}</p>
+    </div>
+{% endif %}
+
+{% if not isPro %}
+    <div class="pane" style="border-left: 3px solid #cdd8e4;">
+        <p>
+            <strong>{{ 'You’re running Trackr Lite.'|t('trackr') }}</strong>
+            {{ 'Item-level tracking, partial shipments, carrier auto-detection, custom carriers, the push API, watched-folder import, delivery notifications and the activity log are Pro. Their settings are shown below but have no effect until you upgrade.'|t('trackr') }}
+        </p>
+    </div>
+{% endif %}
+
+{# ------------------------------------------------------------------ #}
+<h2>{{ 'Fulfilment'|t('trackr') }}</h2>
+
+<div class="pane">
+    <p class="light">
+        {{ 'Commerce has no shipped status of its own. Pick the statuses an order should move to as tracking is added — or have Trackr create them.'|t('trackr') }}
+    </p>
+
+    {{ forms.selectField({
+        label: 'Shipped order status'|t('trackr'),
+        instructions: 'Where an order goes once everything on it has shipped.'|t('trackr'),
+        id: 'shippedStatusHandle',
+        name: 'settings[shippedStatusHandle]',
+        options: statusList,
+        value: settings.shippedStatusHandle
+    }) }}
+
+    {{ forms.selectField({
+        label: 'Partially shipped order status'|t('trackr'),
+        instructions: 'Where an order sits while some of it is still to go. Pro.'|t('trackr'),
+        id: 'partiallyShippedStatusHandle',
+        name: 'settings[partiallyShippedStatusHandle]',
+        options: statusList,
+        value: settings.partiallyShippedStatusHandle,
+        disabled: not isPro
+    }) }}
+
+    {{ forms.selectField({
+        label: 'Delivered order status'|t('trackr'),
+        instructions: 'Where an order goes once every shipment on it is marked delivered. Pro.'|t('trackr'),
+        id: 'deliveredStatusHandle',
+        name: 'settings[deliveredStatusHandle]',
+        options: statusList,
+        value: settings.deliveredStatusHandle,
+        disabled: not isPro
+    }) }}
+
+    {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
+        <div class="field">
+            <div class="buttons">
+                <button type="button" class="btn" data-trackr-create-status="shipped" data-name="{{ 'Shipped'|t('trackr') }}">
+                    {{ 'Create a “Shipped” status'|t('trackr') }}
+                </button>
+                <button type="button" class="btn" data-trackr-create-status="partiallyShipped" data-name="{{ 'Partially shipped'|t('trackr') }}">
+                    {{ 'Create a “Partially shipped” status'|t('trackr') }}
+                </button>
+                <button type="button" class="btn" data-trackr-create-status="delivered" data-name="{{ 'Delivered'|t('trackr') }}">
+                    {{ 'Create a “Delivered” status'|t('trackr') }}
+                </button>
+            </div>
+            <p class="light" id="trackr-status-note" style="margin-top: 6px;"></p>
+        </div>
+    {% endif %}
+</div>
+
+{{ forms.lightswitchField({
+    label: 'Move the order when tracking is added'|t('trackr'),
+    instructions: 'Off records tracking without touching the order’s status.'|t('trackr'),
+    id: 'updateStatusOnTracking',
+    name: 'settings[updateStatusOnTracking]',
+    on: settings.updateStatusOnTracking
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Count units for partial shipments'|t('trackr'),
+    instructions: 'Holds an order at the partially shipped status until every shippable unit is covered. Pro.'|t('trackr'),
+    id: 'partialShipmentsEnabled',
+    name: 'settings[partialShipmentsEnabled]',
+    on: settings.partialShipmentsEnabled,
+    disabled: not isPro
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Write a note on the order history'|t('trackr'),
+    instructions: 'Records the carrier and tracking number against the order, even when the status does not move.'|t('trackr'),
+    id: 'addOrderHistoryNote',
+    name: 'settings[addOrderHistoryNote]',
+    on: settings.addOrderHistoryNote
+}) }}
+
+{{ forms.selectField({
+    label: 'Default carrier'|t('trackr'),
+    instructions: 'Pre-selected on the order screen.'|t('trackr'),
+    id: 'defaultProvider',
+    name: 'settings[defaultProvider]',
+    options: plugin.providers.getSelectOptions(),
+    value: settings.defaultProvider
+}) }}
+
+{{ forms.selectField({
+    label: 'New shipments start as'|t('trackr'),
+    id: 'defaultShipmentStatus',
+    name: 'settings[defaultShipmentStatus]',
+    options: plugin.shipmentStatusOptions(),
+    value: settings.defaultShipmentStatus
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Detect the carrier from the tracking number'|t('trackr'),
+    instructions: 'Used when a CSV row or an API call gives a tracking number but no carrier. Trackr only guesses when exactly one carrier’s pattern matches. Pro.'|t('trackr'),
+    id: 'autoDetectProvider',
+    name: 'settings[autoDetectProvider]',
+    on: settings.autoDetectProvider,
+    disabled: not isPro
+}) }}
+
+{{ forms.textField({
+    label: 'Preferred country'|t('trackr'),
+    instructions: 'Two-letter code. Carriers from this country sort to the top of the picker.'|t('trackr'),
+    id: 'preferredCountry',
+    name: 'settings[preferredCountry]',
+    value: settings.preferredCountry,
+    size: 6,
+    placeholder: 'US'
+}) }}
+
+{# ------------------------------------------------------------------ #}
+<hr>
+<h2>{{ 'Tracking widget'|t('trackr') }}</h2>
+
+<div class="pane">
+    <p class="light">
+        {{ 'Drop {code} into a Commerce email template or an account page. These settings style it.'|t('trackr', {
+            code: '`{{ craft.trackr.widget(order) }}`'
+        })|md(inlineOnly=true) }}
+    </p>
+
+    <div id="trackr-widget-preview" style="background: #fff; padding: 18px; border: 1px dashed #cdd8e4; border-radius: 5px;"></div>
+    <div class="buttons" style="margin-top: 10px;">
+        <button type="button" class="btn" id="trackr-refresh-preview">{{ 'Refresh preview'|t('trackr') }}</button>
+    </div>
+</div>
+
+{{ forms.textField({
+    label: 'Heading'|t('trackr'),
+    id: 'widgetTitle',
+    name: 'settings[widgetTitle]',
+    value: settings.widgetTitle
+}) }}
+
+{{ forms.selectField({
+    label: 'Layout'|t('trackr'),
+    id: 'widgetLayout',
+    name: 'settings[widgetLayout]',
+    options: [
+        { label: 'Cards'|t('trackr'), value: 'card' },
+        { label: 'Compact list'|t('trackr'), value: 'list' },
+        { label: 'Table'|t('trackr'), value: 'table' }
+    ],
+    value: settings.widgetLayout
+}) }}
+
+<div class="flex" style="gap: 14px; flex-wrap: wrap;">
+    {{ forms.textField({ label: 'Accent'|t('trackr'), id: 'widgetAccentColor', name: 'settings[widgetAccentColor]', value: settings.widgetAccentColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Text'|t('trackr'), id: 'widgetTextColor', name: 'settings[widgetTextColor]', value: settings.widgetTextColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Muted text'|t('trackr'), id: 'widgetMutedColor', name: 'settings[widgetMutedColor]', value: settings.widgetMutedColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Background'|t('trackr'), id: 'widgetBackgroundColor', name: 'settings[widgetBackgroundColor]', value: settings.widgetBackgroundColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Border'|t('trackr'), id: 'widgetBorderColor', name: 'settings[widgetBorderColor]', value: settings.widgetBorderColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Button text'|t('trackr'), id: 'widgetButtonTextColor', name: 'settings[widgetButtonTextColor]', value: settings.widgetButtonTextColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Corner radius'|t('trackr'), id: 'widgetRadius', name: 'settings[widgetRadius]', value: settings.widgetRadius, size: 6, class: 'code' }) }}
+</div>
+
+{{ forms.checkboxField({ label: 'Show the delivery status'|t('trackr'), id: 'widgetShowStatus', name: 'settings[widgetShowStatus]', checked: settings.widgetShowStatus }) }}
+{{ forms.checkboxField({ label: 'Show the ship date'|t('trackr'), id: 'widgetShowShipDate', name: 'settings[widgetShowShipDate]', checked: settings.widgetShowShipDate }) }}
+{{ forms.checkboxField({ label: 'Show the shipping service'|t('trackr'), id: 'widgetShowService', name: 'settings[widgetShowService]', checked: settings.widgetShowService }) }}
+{{ forms.checkboxField({ label: 'Show carrier logos'|t('trackr'), id: 'widgetShowProviderLogo', name: 'settings[widgetShowProviderLogo]', checked: settings.widgetShowProviderLogo }) }}
+{{ forms.checkboxField({ label: 'Show a tracking button'|t('trackr'), id: 'widgetShowTrackButton', name: 'settings[widgetShowTrackButton]', checked: settings.widgetShowTrackButton }) }}
+
+{{ forms.textField({
+    label: 'Button label'|t('trackr'),
+    id: 'widgetButtonLabel',
+    name: 'settings[widgetButtonLabel]',
+    value: settings.widgetButtonLabel
+}) }}
+
+{{ forms.textField({
+    label: 'Footer text'|t('trackr'),
+    instructions: 'Shown under the shipments. Somewhere to say how long carrier scans take to appear.'|t('trackr'),
+    id: 'widgetFooterText',
+    name: 'settings[widgetFooterText]',
+    value: settings.widgetFooterText
+}) }}
+
+{{ forms.textField({
+    label: 'Widget template override'|t('trackr'),
+    instructions: 'A site template rendered instead of Trackr’s markup. It receives `order`, `shipments`, `settings`, `styles`, `progress` and `trackingPageUrl`.'|t('trackr'),
+    id: 'widgetTemplate',
+    name: 'settings[widgetTemplate]',
+    value: settings.widgetTemplate,
+    class: 'code',
+    placeholder: '_partials/tracking'
+}) }}
+
+{# ------------------------------------------------------------------ #}
+<hr>
+<h2>{{ 'Tracking page'|t('trackr') }}</h2>
+
+{{ forms.lightswitchField({
+    label: 'Serve a customer tracking page'|t('trackr'),
+    instructions: 'A page guests can look their order up on, without an account.'|t('trackr'),
+    id: 'trackingPageEnabled',
+    name: 'settings[trackingPageEnabled]',
+    on: settings.trackingPageEnabled
+}) }}
+
+{{ forms.textField({
+    label: 'Tracking page URI'|t('trackr'),
+    instructions: 'Currently at {url}.'|t('trackr', { url: settings.getTrackingPageUrl() }),
+    id: 'trackingPageUri',
+    name: 'settings[trackingPageUri]',
+    value: settings.trackingPageUri,
+    class: 'code'
+}) }}
+
+{{ forms.textField({
+    label: 'Tracking page template override'|t('trackr'),
+    instructions: 'A site template rendered instead of Trackr’s own page.'|t('trackr'),
+    id: 'trackingPageTemplate',
+    name: 'settings[trackingPageTemplate]',
+    value: settings.trackingPageTemplate,
+    class: 'code'
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Require the email address on the order'|t('trackr'),
+    instructions: 'Strongly recommended. Order numbers are guessable; turning this off makes every order’s fulfilment readable by anyone.'|t('trackr'),
+    id: 'trackingRequireEmail',
+    name: 'settings[trackingRequireEmail]',
+    on: settings.trackingRequireEmail
+}) }}
+
+<div class="flex" style="gap: 14px; flex-wrap: wrap;">
+    {{ forms.textField({
+        label: 'Failed lookups allowed'|t('trackr'),
+        id: 'trackingMaxAttempts',
+        name: 'settings[trackingMaxAttempts]',
+        value: settings.trackingMaxAttempts,
+        size: 5,
+        type: 'number'
+    }) }}
+
+    {{ forms.textField({
+        label: '…within this many seconds'|t('trackr'),
+        id: 'trackingAttemptWindow',
+        name: 'settings[trackingAttemptWindow]',
+        value: settings.trackingAttemptWindow,
+        size: 7,
+        type: 'number'
+    }) }}
+</div>
+
+{# ------------------------------------------------------------------ #}
+<hr>
+<h2>{{ 'Notifications'|t('trackr') }}</h2>
+
+<div class="pane">
+    <p class="light">
+        {{ 'If a shipment already moves the order to a status Commerce emails on, leave these off and put the widget in that email instead. These are for stores where it does not.'|t('trackr') }}
+    </p>
+</div>
+
+{{ forms.lightswitchField({
+    label: 'Email the customer when a shipment is recorded'|t('trackr'),
+    id: 'notifyOnShipment',
+    name: 'settings[notifyOnShipment]',
+    on: settings.notifyOnShipment,
+    disabled: not isPro
+}) }}
+
+{{ forms.textField({
+    label: 'Shipment email subject'|t('trackr'),
+    instructions: 'Placeholders: `{orderNumber}`, `{trackingNumber}`, `{provider}`, `{siteName}`.'|t('trackr'),
+    id: 'shipmentEmailSubject',
+    name: 'settings[shipmentEmailSubject]',
+    value: settings.shipmentEmailSubject
+}) }}
+
+{{ forms.textField({
+    label: 'Shipment email template'|t('trackr'),
+    id: 'shipmentEmailTemplate',
+    name: 'settings[shipmentEmailTemplate]',
+    value: settings.shipmentEmailTemplate,
+    class: 'code'
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Email the customer when a shipment is delivered'|t('trackr'),
+    id: 'notifyOnDelivery',
+    name: 'settings[notifyOnDelivery]',
+    on: settings.notifyOnDelivery,
+    disabled: not isPro
+}) }}
+
+{{ forms.textField({
+    label: 'Delivery email subject'|t('trackr'),
+    id: 'deliveryEmailSubject',
+    name: 'settings[deliveryEmailSubject]',
+    value: settings.deliveryEmailSubject
+}) }}
+
+{{ forms.textField({
+    label: 'Delivery email template'|t('trackr'),
+    id: 'deliveryEmailTemplate',
+    name: 'settings[deliveryEmailTemplate]',
+    value: settings.deliveryEmailTemplate,
+    class: 'code'
+}) }}
+
+{# ------------------------------------------------------------------ #}
+<hr>
+<h2>{{ 'Import'|t('trackr') }}</h2>
+
+{{ forms.selectField({
+    label: 'The order number column holds'|t('trackr'),
+    instructions: 'Leave on automatic unless your supplier sends something ambiguous.'|t('trackr'),
+    id: 'csvOrderNumberSource',
+    name: 'settings[csvOrderNumberSource]',
+    options: [
+        { label: 'Whatever matches'|t('trackr'), value: 'auto' },
+        { label: 'Order reference'|t('trackr'), value: 'reference' },
+        { label: 'Order number'|t('trackr'), value: 'number' },
+        { label: 'Short number'|t('trackr'), value: 'shortNumber' },
+        { label: 'Element ID'|t('trackr'), value: 'id' }
+    ],
+    value: settings.csvOrderNumberSource
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'Watched folder'|t('trackr'),
+    instructions: 'A server path polled by `php craft trackr/import/watch`. Pro.'|t('trackr'),
+    id: 'importWatchPath',
+    name: 'settings[importWatchPath]',
+    value: settings.importWatchPath,
+    suggestEnvVars: true,
+    disabled: not isPro
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Keep imported files'|t('trackr'),
+    instructions: 'Moves them into a `processed/` subfolder instead of deleting them.'|t('trackr'),
+    id: 'importArchiveProcessed',
+    name: 'settings[importArchiveProcessed]',
+    on: settings.importArchiveProcessed
+}) }}
+
+{# ------------------------------------------------------------------ #}
+<hr>
+<h2>{{ 'Push API'|t('trackr') }}</h2>
+
+<div class="pane">
+    <p>{{ 'Fulfilment services post tracking to this URL:'|t('trackr') }}</p>
+    {{ forms.textField({
+        id: 'trackr-endpoint',
+        value: settings.getApiEndpointUrl(),
+        readonly: true,
+        class: 'code'
+    }) }}
+    <p class="light">
+        {{ 'Authenticate with `Authorization: Bearer <token>`, or an `X-Trackr-Token` header, or a `trackr_token` query parameter on servers that eat the Authorization header.'|t('trackr') }}
+    </p>
+</div>
+
+{{ forms.lightswitchField({
+    label: 'Accept pushed tracking'|t('trackr'),
+    id: 'apiEnabled',
+    name: 'settings[apiEnabled]',
+    on: settings.apiEnabled,
+    disabled: not isPro
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'API token'|t('trackr'),
+    instructions: 'With no token the endpoint rejects everything, which is the safe default.'|t('trackr'),
+    id: 'apiToken',
+    name: 'settings[apiToken]',
+    value: settings.apiToken,
+    suggestEnvVars: true,
+    disabled: not isPro
+}) }}
+
+<div class="field">
+    <button type="button" class="btn" id="trackr-generate-token" {{ not isPro ? 'disabled' }}>{{ 'Generate a token'|t('trackr') }}</button>
+    <span class="light" id="trackr-token-note"></span>
+</div>
+
+{# ------------------------------------------------------------------ #}
+<hr>
+<h2>{{ 'Log'|t('trackr') }}</h2>
+
+{{ forms.lightswitchField({
+    label: 'Log activity'|t('trackr'),
+    id: 'loggingEnabled',
+    name: 'settings[loggingEnabled]',
+    on: settings.loggingEnabled
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Keep payloads'|t('trackr'),
+    instructions: 'Stores what each API call and import row contained. Pro.'|t('trackr'),
+    id: 'logPayloads',
+    name: 'settings[logPayloads]',
+    on: settings.logPayloads,
+    disabled: not isPro
+}) }}
+
+{{ forms.textField({
+    label: 'Days of history to keep'|t('trackr'),
+    instructions: '0 keeps everything. Lite keeps 7 days regardless.'|t('trackr'),
+    id: 'logRetentionDays',
+    name: 'settings[logRetentionDays]',
+    value: settings.logRetentionDays,
+    size: 5,
+    type: 'number'
+}) }}
+
+{% js %}
+(function() {
+    var previewFields = [
+        'widgetTitle', 'widgetLayout', 'widgetAccentColor', 'widgetTextColor', 'widgetMutedColor',
+        'widgetBackgroundColor', 'widgetBorderColor', 'widgetButtonTextColor', 'widgetRadius',
+        'widgetButtonLabel', 'widgetFooterText'
+    ];
+    var previewSwitches = [
+        'widgetShowStatus', 'widgetShowShipDate', 'widgetShowService',
+        'widgetShowProviderLogo', 'widgetShowTrackButton'
+    ];
+
+    function refreshPreview() {
+        var target = document.getElementById('trackr-widget-preview');
+        if (!target) { return; }
+
+        var settings = {};
+
+        previewFields.forEach(function(field) {
+            var el = document.getElementById(field);
+            if (el) { settings[field] = el.value; }
+        });
+
+        previewSwitches.forEach(function(field) {
+            var el = document.getElementById(field);
+            if (el) { settings[field] = el.checked ? 1 : 0; }
+        });
+
+        Craft.sendActionRequest('POST', 'trackr/settings/preview-widget', { data: { settings: settings } })
+            .then(function(response) { target.innerHTML = response.data.html; })
+            .catch(function() { target.textContent = {{ 'Preview unavailable.'|t('trackr')|json_encode|raw }}; });
+    }
+
+    document.getElementById('trackr-refresh-preview').addEventListener('click', refreshPreview);
+    refreshPreview();
+
+    document.querySelectorAll('[data-trackr-create-status]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var note = document.getElementById('trackr-status-note');
+            button.classList.add('loading');
+
+            Craft.sendActionRequest('POST', 'trackr/settings/create-status', {
+                data: {
+                    handle: button.getAttribute('data-trackr-create-status'),
+                    name: button.getAttribute('data-name')
+                }
+            })
+                .then(function(response) {
+                    note.textContent = response.data.message;
+                    if (response.data.success) {
+                        Craft.cp.displayNotice(response.data.message);
+                        window.location.reload();
+                    }
+                })
+                .catch(function() { note.textContent = {{ 'Couldn’t create that status.'|t('trackr')|json_encode|raw }}; })
+                .finally(function() { button.classList.remove('loading'); });
+        });
+    });
+
+    var tokenButton = document.getElementById('trackr-generate-token');
+    if (tokenButton) {
+        tokenButton.addEventListener('click', function() {
+            Craft.sendActionRequest('POST', 'trackr/settings/generate-token')
+                .then(function(response) {
+                    var input = document.getElementById('apiToken');
+                    if (input) { input.value = response.data.token; }
+                    document.getElementById('trackr-token-note').textContent =
+                        {{ 'Generated — save the settings to keep it.'|t('trackr')|json_encode|raw }};
+                })
+                .catch(function() {
+                    document.getElementById('trackr-token-note').textContent =
+                        {{ 'Couldn’t generate a token.'|t('trackr')|json_encode|raw }};
+                });
+        });
+    }
+})();
+{% endjs %}

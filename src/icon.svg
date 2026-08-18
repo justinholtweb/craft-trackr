@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Trackr">
+    <rect width="100" height="100" rx="22" fill="#3F4EA8"/>
+    <!-- the route the parcel takes -->
+    <path d="M24 68 C 24 42, 48 46, 52 34"
+          fill="none" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="5"
+          stroke-linecap="round" stroke-dasharray="1 11"/>
+    <!-- the parcel, at the start of the route -->
+    <rect x="14" y="60" width="22" height="17" rx="2.5" fill="#FFFFFF"/>
+    <rect x="22.5" y="60" width="5" height="17" fill="#C3CBF0"/>
+    <rect x="14" y="60" width="22" height="4.5" rx="2.5" fill="#E6EAF9"/>
+    <!-- the pin, where it is now -->
+    <path d="M66 20 C 76.5 20, 85 28.5, 85 39 C 85 52, 66 72, 66 72 C 66 72, 47 52, 47 39 C 47 28.5, 55.5 20, 66 20 Z"
+          fill="#FFFFFF"/>
+    <circle cx="66" cy="38.5" r="7.5" fill="#3F4EA8"/>
+</svg>

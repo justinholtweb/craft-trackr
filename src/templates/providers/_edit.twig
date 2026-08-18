@@ -1,0 +1,117 @@
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = isNew ? 'New carrier'|t('trackr') : provider.name %}
+{% set selectedSubnavItem = 'providers' %}
+{% set crumbs = [
+    { label: 'Carriers'|t('trackr'), url: url('trackr/providers') }
+] %}
+
+{% block content %}
+    <form method="post" accept-charset="UTF-8">
+        {{ csrfInput() }}
+        {{ actionInput('trackr/providers/save') }}
+        {{ redirectInput('trackr/providers') }}
+        {{ hiddenInput('isCustom', provider.isCustom or isNew ? '1' : '') }}
+
+        {% if not (provider.isCustom or isNew) %}
+            <div class="pane" style="border-left: 3px solid #cdd8e4;">
+                <p>{{ 'This is a built-in carrier. What you change here is stored as an override, so a corrected tracking URL in a future Trackr release still reaches you.'|t('trackr') }}</p>
+            </div>
+        {% endif %}
+
+        {{ forms.textField({
+            label: 'Name'|t('trackr'),
+            instructions: 'What customers see next to the tracking number.'|t('trackr'),
+            id: 'name',
+            name: 'name',
+            value: provider.name,
+            autofocus: true
+        }) }}
+
+        {{ forms.textField({
+            label: 'Handle'|t('trackr'),
+            instructions: 'Used by the API and CSV import. Leave blank to generate one.'|t('trackr'),
+            id: 'handle',
+            name: 'handle',
+            value: provider.handle,
+            class: 'code',
+            disabled: not isNew
+        }) }}
+
+        {% if not isNew %}{{ hiddenInput('handle', provider.handle) }}{% endif %}
+
+        {{ forms.textField({
+            label: 'Tracking URL'|t('trackr'),
+            instructions: 'Placeholders: `{tracking_number}`, `{postal_code}`, `{phone}`, `{country}`, `{ship_date}`. Leave blank to record numbers without a link.'|t('trackr'),
+            id: 'url',
+            name: 'url',
+            value: provider.url,
+            class: 'code',
+            placeholder: 'https://example.com/track?n={tracking_number}'
+        }) }}
+
+        {{ forms.textField({
+            label: 'Logo URL'|t('trackr'),
+            instructions: 'Optional. Shown in the tracking widget — must be publicly reachable, since it is loaded inside emails.'|t('trackr'),
+            id: 'logoUrl',
+            name: 'logoUrl',
+            value: provider.logoUrl,
+            class: 'code'
+        }) }}
+
+        {% if provider.isCustom or isNew %}
+            {{ forms.textField({
+                label: 'Country'|t('trackr'),
+                instructions: 'Two-letter country code, or `*` for global.'|t('trackr'),
+                id: 'country',
+                name: 'country',
+                value: provider.country,
+                size: 6
+            }) }}
+
+            {{ forms.textareaField({
+                label: 'Tracking number patterns'|t('trackr'),
+                instructions: 'One regular expression per line, used to auto-detect this carrier from a tracking number. Leave blank if its numbers look like everyone else’s.'|t('trackr'),
+                id: 'match',
+                name: 'match',
+                value: provider.match|join("\n"),
+                rows: 4,
+                class: 'code'
+            }) }}
+        {% endif %}
+
+        {{ forms.lightswitchField({
+            label: 'Offer this carrier in the picker'|t('trackr'),
+            id: 'enabled',
+            name: 'enabled',
+            on: provider.enabled
+        }) }}
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ 'Save'|t('trackr') }}</button>
+            {% if provider.isCustom and not isNew %}
+                <button type="button" class="btn caution" id="trackr-delete-provider">{{ 'Delete'|t('trackr') }}</button>
+            {% endif %}
+        </div>
+    </form>
+{% endblock %}
+
+{% js %}
+(function() {
+    var button = document.getElementById('trackr-delete-provider');
+    if (!button) { return; }
+
+    button.addEventListener('click', function() {
+        if (!confirm({{ 'Delete this carrier? Shipments recorded against it keep their carrier name.'|t('trackr')|json_encode|raw }})) {
+            return;
+        }
+
+        Craft.sendActionRequest('POST', 'trackr/providers/delete', {
+            data: { handle: {{ provider.handle|json_encode|raw }} }
+        })
+            .then(function() { window.location.href = {{ url('trackr/providers')|json_encode|raw }}; })
+            .catch(function() { Craft.cp.displayError({{ 'Couldn’t delete that carrier.'|t('trackr')|json_encode|raw }}); });
+    });
+})();
+{% endjs %}

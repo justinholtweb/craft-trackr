@@ -1,0 +1,32 @@
+{#
+    Trackr's own delivery notification. Commerce has no concept of a delivered order, so this is
+    the only place it gets said.
+#}
+<!DOCTYPE html>
+<html lang="{{ craft.app.language }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ 'Your order has been delivered'|t('trackr') }}</title>
+</head>
+<body style="margin:0;padding:24px;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:{{ styles.text }};">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;margin:0 auto;border-collapse:collapse;">
+        <tr>
+            <td style="padding:0 0 16px;font-size:20px;font-weight:600;">
+                {{ 'Delivered'|t('trackr') }}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:0 0 20px;font-size:15px;line-height:1.6;">
+                {{ 'Order {number} was delivered{date}.'|t('trackr', {
+                    number: craft.trackr.orderNumber(order),
+                    date: shipment.dateDelivered ? ' ' ~ shipment.dateDelivered|date('long') : ''
+                }) }}
+            </td>
+        </tr>
+        <tr>
+            <td>{{ craft.trackr.widget(order) }}</td>
+        </tr>
+    </table>
+</body>
+</html>

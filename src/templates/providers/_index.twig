@@ -1,0 +1,113 @@
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = 'Carriers'|t('trackr') %}
+{% set selectedSubnavItem = 'providers' %}
+
+{% block actionButton %}
+    {% if isPro %}
+        <a href="{{ url('trackr/providers/new') }}" class="btn submit add icon">{{ 'New carrier'|t('trackr') }}</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if not isPro %}
+        <div class="pane" style="border-left: 3px solid #cdd8e4;">
+            <p>{{ 'Trackr Lite ships {count} carriers and lets you switch any of them off. Renaming them, white-labelling them and adding your own is Pro.'|t('trackr', { count: providers|length }) }}</p>
+        </div>
+    {% endif %}
+
+    <form method="get" action="{{ url('trackr/providers') }}" style="margin-bottom: 16px;">
+        {{ forms.text({
+            name: 'search',
+            value: search,
+            placeholder: 'Search carriers'|t('trackr'),
+            class: 'text fullwidth'
+        }) }}
+    </form>
+
+    <table class="data fullwidth">
+        <thead>
+            <tr>
+                <th scope="col">{{ 'Carrier'|t('trackr') }}</th>
+                <th scope="col">{{ 'Handle'|t('trackr') }}</th>
+                <th scope="col">{{ 'Country'|t('trackr') }}</th>
+                <th scope="col">{{ 'Tracking URL'|t('trackr') }}</th>
+                <th scope="col">{{ 'In the picker'|t('trackr') }}</th>
+                <th scope="col" class="thin"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for handle, provider in providers %}
+                <tr>
+                    <td>
+                        {{ provider.name }}
+                        {% if provider.isCustom %}<span class="light"> · {{ 'custom'|t('trackr') }}</span>{% endif %}
+                        {% if provider.isOverridden %}<span class="light"> · {{ 'edited'|t('trackr') }}</span>{% endif %}
+                    </td>
+                    <td><code>{{ handle }}</code></td>
+                    <td>{{ provider.country == '*' ? 'Global'|t('trackr') : provider.country }}</td>
+                    <td>
+                        {% if provider.hasUrl() %}
+                            <span class="light">{{ provider.url|length > 54 ? provider.url|slice(0, 54) ~ '…' : provider.url }}</span>
+                        {% else %}
+                            <span class="light">{{ 'none — numbers show as plain text'|t('trackr') }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status {{ provider.enabled ? 'green' : 'disabled' }}"></span>
+                        {{ provider.enabled ? 'Yes'|t('trackr') : 'No'|t('trackr') }}
+                    </td>
+                    <td class="thin nowrap">
+                        <button type="button" class="btn small" data-trackr-toggle="{{ handle }}" data-enabled="{{ provider.enabled ? '1' : '0' }}">
+                            {{ provider.enabled ? 'Disable'|t('trackr') : 'Enable'|t('trackr') }}
+                        </button>
+                        {% if provider.hasUrl() %}
+                            <button type="button" class="btn small" data-trackr-test="{{ handle }}">{{ 'Test'|t('trackr') }}</button>
+                        {% endif %}
+                        {% if isPro %}
+                            <a class="btn small" href="{{ url('trackr/providers/' ~ handle) }}">{{ 'Edit'|t('trackr') }}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% js %}
+(function() {
+    document.querySelectorAll('[data-trackr-toggle]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            button.classList.add('loading');
+            Craft.sendActionRequest('POST', 'trackr/providers/toggle', {
+                data: {
+                    handle: button.getAttribute('data-trackr-toggle'),
+                    enabled: button.getAttribute('data-enabled') === '1' ? 0 : 1
+                }
+            })
+                .then(function() { window.location.reload(); })
+                .catch(function() {
+                    button.classList.remove('loading');
+                    Craft.cp.displayError({{ 'Couldn’t change that carrier.'|t('trackr')|json_encode|raw }});
+                });
+        });
+    });
+
+    document.querySelectorAll('[data-trackr-test]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            Craft.sendActionRequest('POST', 'trackr/providers/test', {
+                data: { handle: button.getAttribute('data-trackr-test') }
+            })
+                .then(function(response) {
+                    if (response.data.url) {
+                        window.open(response.data.url, '_blank', 'noopener');
+                    } else {
+                        Craft.cp.displayNotice(response.data.message);
+                    }
+                })
+                .catch(function() { Craft.cp.displayError({{ 'Couldn’t build a URL.'|t('trackr')|json_encode|raw }}); });
+        });
+    });
+})();
+{% endjs %}

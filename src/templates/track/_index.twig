@@ -1,0 +1,113 @@
+{#
+    Trackr's own customer-facing tracking page.
+
+    Deliberately a whole, standalone document with inline styles: it has to work on a site that
+    has no template for it yet. Point `trackingPageTemplate` at a site template to replace it
+    entirely — the same variables are handed to yours.
+#}
+{% set accent = styles.accent %}
+{% set text = styles.text %}
+{% set muted = styles.muted %}
+{% set border = styles.border %}
+{% set background = styles.background %}
+{% set radius = styles.radius %}
+<!DOCTYPE html>
+<html lang="{{ craft.app.language }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ settings.widgetTitle|t('trackr') }}</title>
+    <style>
+        :root { color-scheme: light dark; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            color: {{ text }};
+            background: #ffffff;
+            line-height: 1.55;
+        }
+        .trackr-wrap { max-width: 620px; margin: 0 auto; }
+        h1 { font-size: 26px; margin: 0 0 8px; }
+        .trackr-sub { color: {{ muted }}; margin: 0 0 28px; }
+        .trackr-form { background: {{ background }}; border: 1px solid {{ border }}; border-radius: {{ radius }}; padding: 20px; }
+        .trackr-field { margin-bottom: 14px; }
+        .trackr-field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+        .trackr-field input {
+            width: 100%; padding: 10px 12px; font-size: 16px;
+            border: 1px solid {{ border }}; border-radius: {{ radius }}; background: #fff; color: {{ text }};
+        }
+        .trackr-button {
+            display: inline-block; padding: 11px 20px; font-size: 15px; font-weight: 600;
+            background: {{ accent }}; color: {{ styles.buttonText }};
+            border: 0; border-radius: {{ radius }}; cursor: pointer;
+        }
+        .trackr-error {
+            padding: 12px 14px; margin-bottom: 20px; border-radius: {{ radius }};
+            background: #FDECEC; border: 1px solid #F3B9B9; color: #8A1F1F;
+        }
+        .trackr-meta { color: {{ muted }}; font-size: 14px; margin: 0 0 20px; }
+        .trackr-empty { color: {{ muted }}; }
+        @media (prefers-color-scheme: dark) {
+            body { background: #14181C; color: #E6EAEE; }
+            .trackr-form { background: #1C2126; border-color: #2C343B; }
+            .trackr-field input { background: #14181C; border-color: #2C343B; color: #E6EAEE; }
+        }
+    </style>
+</head>
+<body>
+    <div class="trackr-wrap">
+        <h1>{{ settings.widgetTitle|t('trackr') }}</h1>
+
+        {% if order %}
+            <p class="trackr-meta">
+                {{ 'Order {number}'|t('trackr', { number: craft.trackr.orderNumber(order) }) }}
+                {% if order.dateOrdered %} · {{ order.dateOrdered|date('long') }}{% endif %}
+            </p>
+
+            {% if shipments|length %}
+                {{ craft.trackr.widget(order) }}
+            {% else %}
+                <div class="trackr-form">
+                    <p class="trackr-empty" style="margin: 0;">
+                        {{ 'This order hasn’t shipped yet. You’ll get an email with tracking as soon as it does.'|t('trackr') }}
+                    </p>
+                </div>
+            {% endif %}
+
+            <p style="margin-top: 26px;">
+                <a href="{{ settings.getTrackingPageUrl() }}" style="color: {{ accent }};">{{ 'Track another order'|t('trackr') }}</a>
+            </p>
+        {% else %}
+            <p class="trackr-sub">
+                {{ 'Enter your order number to see where your parcel is.'|t('trackr') }}
+            </p>
+
+            {% if error %}
+                <div class="trackr-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" action="" class="trackr-form">
+                {{ csrfInput() }}
+
+                <div class="trackr-field">
+                    <label for="trackr-order-number">{{ 'Order number'|t('trackr') }}</label>
+                    <input type="text" id="trackr-order-number" name="orderNumber" value="{{ orderNumber }}"
+                           autocomplete="off" autocapitalize="off" spellcheck="false" required>
+                </div>
+
+                {% if settings.trackingRequireEmail %}
+                    <div class="trackr-field">
+                        <label for="trackr-email">{{ 'Email address on the order'|t('trackr') }}</label>
+                        <input type="email" id="trackr-email" name="email" value="{{ email }}" autocomplete="email" required>
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="trackr-button">{{ 'Track'|t('trackr') }}</button>
+            </form>
+        {% endif %}
+    </div>
+</body>
+</html>

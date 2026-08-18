@@ -1,0 +1,168 @@
+{#
+    The tracking widget.
+
+    Rendered into order emails, account pages and the tracking page, so everything is a table
+    with inline styles: email clients strip <style> blocks and never load an external sheet.
+#}
+{% set accent = styles.accent %}
+{% set text = styles.text %}
+{% set muted = styles.muted %}
+{% set background = styles.background %}
+{% set border = styles.border %}
+{% set buttonText = styles.buttonText %}
+{% set radius = styles.radius %}
+{% set layout = settings.widgetLayout %}
+
+{% if shipments|length %}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:{{ text }};">
+    {% if settings.widgetTitle %}
+        <tr>
+            <td style="padding:0 0 12px;font-size:17px;font-weight:600;color:{{ text }};">
+                {{ settings.widgetTitle }}
+            </td>
+        </tr>
+    {% endif %}
+
+    {% if progress and progress.total > 1 and not progress.fullyShipped %}
+        <tr>
+            <td style="padding:0 0 12px;font-size:13px;color:{{ muted }};">
+                {{ '{shipped} of {total} items shipped'|t('trackr', { shipped: progress.shipped, total: progress.total }) }}
+            </td>
+        </tr>
+    {% endif %}
+
+    <tr>
+        <td>
+            {% if layout == 'table' %}
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;border:1px solid {{ border }};border-radius:{{ radius }};">
+                    <tr style="background:{{ background }};">
+                        <th align="left" style="padding:10px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:{{ muted }};font-weight:600;">{{ 'Carrier'|t('trackr') }}</th>
+                        <th align="left" style="padding:10px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:{{ muted }};font-weight:600;">{{ 'Tracking number'|t('trackr') }}</th>
+                        {% if settings.widgetShowStatus %}
+                            <th align="left" style="padding:10px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:{{ muted }};font-weight:600;">{{ 'Status'|t('trackr') }}</th>
+                        {% endif %}
+                    </tr>
+                    {% for shipment in shipments %}
+                        {% set url = shipment.getTrackingUrl() %}
+                        <tr>
+                            <td style="padding:10px 12px;border-top:1px solid {{ border }};">{{ shipment.getProviderLabel() ?: '—' }}</td>
+                            <td style="padding:10px 12px;border-top:1px solid {{ border }};">
+                                {% if url %}
+                                    <a href="{{ url }}" target="_blank" rel="noopener noreferrer" style="color:{{ accent }};text-decoration:underline;">{{ shipment.trackingNumber }}</a>
+                                {% else %}
+                                    {{ shipment.trackingNumber ?: '—' }}
+                                {% endif %}
+                            </td>
+                            {% if settings.widgetShowStatus %}
+                                <td style="padding:10px 12px;border-top:1px solid {{ border }};color:{{ muted }};">{{ shipment.getStatusLabel()|t('trackr') }}</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+
+            {% elseif layout == 'list' %}
+                {% for shipment in shipments %}
+                    {% set url = shipment.getTrackingUrl() %}
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;margin:0 0 8px;">
+                        <tr>
+                            <td style="padding:0 0 4px;">
+                                <strong style="color:{{ text }};">{{ shipment.getProviderLabel() ?: 'Shipment'|t('trackr') }}</strong>
+                                {% if settings.widgetShowService and shipment.service %}
+                                    <span style="color:{{ muted }};"> · {{ shipment.service }}</span>
+                                {% endif %}
+                                {% if settings.widgetShowStatus %}
+                                    <span style="color:{{ muted }};"> · {{ shipment.getStatusLabel()|t('trackr') }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0 0 10px;">
+                                {% if url %}
+                                    <a href="{{ url }}" target="_blank" rel="noopener noreferrer" style="color:{{ accent }};text-decoration:underline;">{{ shipment.trackingNumber }}</a>
+                                {% else %}
+                                    <span style="color:{{ text }};">{{ shipment.trackingNumber ?: '—' }}</span>
+                                {% endif %}
+                                {% if settings.widgetShowShipDate and shipment.shipDate %}
+                                    <span style="color:{{ muted }};"> · {{ 'Shipped {date}'|t('trackr', { date: shipment.shipDate|date('medium') }) }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                {% endfor %}
+
+            {% else %}
+                {% for shipment in shipments %}
+                    {% set url = shipment.getTrackingUrl() %}
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:separate;background:{{ background }};border:1px solid {{ border }};border-radius:{{ radius }};margin:0 0 10px;">
+                        <tr>
+                            <td style="padding:14px 16px;">
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;">
+                                    <tr>
+                                        {% if settings.widgetShowProviderLogo and shipment.getProvider() and shipment.getProvider().logoUrl %}
+                                            <td width="56" valign="top" style="padding:0 12px 0 0;">
+                                                <img src="{{ shipment.getProvider().logoUrl }}" alt="{{ shipment.getProviderLabel() }}" width="48" style="display:block;max-width:48px;height:auto;">
+                                            </td>
+                                        {% endif %}
+                                        <td valign="top">
+                                            <div style="font-weight:600;color:{{ text }};">
+                                                {{ shipment.getProviderLabel() ?: 'Shipment'|t('trackr') }}
+                                                {% if settings.widgetShowService and shipment.service %}
+                                                    <span style="font-weight:400;color:{{ muted }};">· {{ shipment.service }}</span>
+                                                {% endif %}
+                                            </div>
+
+                                            <div style="margin-top:4px;color:{{ text }};font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;">
+                                                {% if url %}
+                                                    <a href="{{ url }}" target="_blank" rel="noopener noreferrer" style="color:{{ accent }};text-decoration:underline;">{{ shipment.trackingNumber }}</a>
+                                                {% else %}
+                                                    {{ shipment.trackingNumber ?: '—' }}
+                                                {% endif %}
+                                            </div>
+
+                                            <div style="margin-top:6px;font-size:13px;color:{{ muted }};">
+                                                {% if settings.widgetShowStatus %}{{ shipment.getStatusLabel()|t('trackr') }}{% endif %}
+                                                {% if settings.widgetShowShipDate and shipment.shipDate %}
+                                                    {% if settings.widgetShowStatus %} · {% endif %}{{ 'Shipped {date}'|t('trackr', { date: shipment.shipDate|date('medium') }) }}
+                                                {% endif %}
+                                                {% if shipment.isDelivered and shipment.dateDelivered %}
+                                                    · {{ 'Delivered {date}'|t('trackr', { date: shipment.dateDelivered|date('medium') }) }}
+                                                {% endif %}
+                                            </div>
+
+                                            {% if shipment.note %}
+                                                <div style="margin-top:6px;font-size:13px;color:{{ muted }};">{{ shipment.note }}</div>
+                                            {% endif %}
+
+                                            {% if settings.widgetShowTrackButton and url %}
+                                                <div style="margin-top:12px;">
+                                                    <a href="{{ url }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:8px 16px;background:{{ accent }};color:{{ buttonText }};border-radius:{{ radius }};text-decoration:none;font-size:14px;font-weight:600;">
+                                                        {{ settings.widgetButtonLabel|t('trackr') }}
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                {% endfor %}
+            {% endif %}
+        </td>
+    </tr>
+
+    {% if trackingPageUrl %}
+        <tr>
+            <td style="padding:6px 0 0;font-size:13px;color:{{ muted }};">
+                <a href="{{ trackingPageUrl }}" style="color:{{ accent }};text-decoration:underline;">{{ 'See all tracking for this order'|t('trackr') }}</a>
+            </td>
+        </tr>
+    {% endif %}
+
+    {% if settings.widgetFooterText %}
+        <tr>
+            <td style="padding:10px 0 0;font-size:13px;color:{{ muted }};">{{ settings.widgetFooterText }}</td>
+        </tr>
+    {% endif %}
+</table>
+{% endif %}

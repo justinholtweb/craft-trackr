@@ -1,0 +1,160 @@
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+
+{% set title = shipment.trackingNumber ?? 'Shipment'|t('trackr') %}
+{% set selectedSubnavItem = 'shipments' %}
+{% set crumbs = [
+    { label: 'Shipments'|t('trackr'), url: url('trackr/shipments') }
+] %}
+
+{% block content %}
+    <div class="pane">
+        <table class="data fullwidth">
+            <tbody>
+                <tr>
+                    <th scope="row">{{ 'Order'|t('trackr') }}</th>
+                    <td>
+                        {% if order %}
+                            <a href="{{ order.getCpEditUrl() }}">{{ order.reference ?? order.shortNumber }}</a>
+                        {% else %}
+                            <span class="light">#{{ shipment.orderId }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr><th scope="row">{{ 'Carrier'|t('trackr') }}</th><td>{{ shipment.getProviderLabel() ?: '—' }}</td></tr>
+                <tr><th scope="row">{{ 'Service'|t('trackr') }}</th><td>{{ shipment.service ?? '—' }}</td></tr>
+                <tr>
+                    <th scope="row">{{ 'Tracking number'|t('trackr') }}</th>
+                    <td>
+                        {% set trackingUrl = shipment.getTrackingUrl() %}
+                        {% if trackingUrl %}
+                            <a href="{{ trackingUrl }}" rel="noopener noreferrer" target="_blank">{{ shipment.trackingNumber }}</a>
+                        {% else %}
+                            {{ shipment.trackingNumber ?? '—' }}
+                            <span class="light">{{ '(this carrier has no tracking URL)'|t('trackr') }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">{{ 'Status'|t('trackr') }}</th>
+                    <td>
+                        <span class="status {{ shipment.getStatusColor() }}"></span>
+                        {{ shipment.getStatusLabel()|t('trackr') }}
+                        {% if shipment.statusDetail %}<span class="light"> — {{ shipment.statusDetail }}</span>{% endif %}
+                    </td>
+                </tr>
+                <tr><th scope="row">{{ 'Ship date'|t('trackr') }}</th><td>{{ shipment.shipDate ? shipment.shipDate|datetime('short') : '—' }}</td></tr>
+                <tr><th scope="row">{{ 'Delivered'|t('trackr') }}</th><td>{{ shipment.dateDelivered ? shipment.dateDelivered|datetime('short') : '—' }}</td></tr>
+                <tr><th scope="row">{{ 'Units'|t('trackr') }}</th><td>{{ shipment.getQty() ?: '—' }}</td></tr>
+                <tr><th scope="row">{{ 'Note'|t('trackr') }}</th><td>{{ shipment.note ?? '—' }}</td></tr>
+                <tr><th scope="row">{{ 'Source'|t('trackr') }}</th><td>{{ shipment.source }}</td></tr>
+                <tr><th scope="row">{{ 'Customer notified'|t('trackr') }}</th><td>{{ shipment.customerNotified ? 'Yes'|t('trackr') : 'No'|t('trackr') }}</td></tr>
+                <tr><th scope="row">{{ 'Recorded'|t('trackr') }}</th><td>{{ shipment.dateCreated ? shipment.dateCreated|datetime('short') : '—' }}</td></tr>
+                <tr><th scope="row">{{ 'Shipment key'|t('trackr') }}</th><td><code>{{ shipment.shipmentKey }}</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if shipment.isItemLevel and lineItems %}
+        <div class="pane">
+            <h2>{{ 'Items in this shipment'|t('trackr') }}</h2>
+            <table class="data fullwidth">
+                <tbody>
+                    {% for item in shipment.getItems() %}
+                        {% set lineItem = lineItems[item.lineItemId] ?? null %}
+                        <tr>
+                            <td>{{ lineItem ? lineItem.description : 'Line item #' ~ item.lineItemId }}</td>
+                            <td class="thin light">{{ lineItem ? lineItem.sku : '' }}</td>
+                            <td class="thin">×{{ item.qty }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if canManage %}
+        <div class="pane">
+            <h2>{{ 'Update'|t('trackr') }}</h2>
+
+            <div class="flex" style="gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="min-width: 180px;">
+                    {{ forms.selectField({
+                        label: 'Delivery status'|t('trackr'),
+                        id: 'trackr-status',
+                        options: statusOptions,
+                        value: shipment.status
+                    }) }}
+                </div>
+                <div style="flex: 1 1 240px;">
+                    {{ forms.textField({
+                        label: 'Detail'|t('trackr'),
+                        id: 'trackr-status-detail',
+                        value: shipment.statusDetail,
+                        placeholder: 'Left with a neighbour'|t('trackr')
+                    }) }}
+                </div>
+                <div class="buttons">
+                    <button type="button" class="btn submit" id="trackr-update-status">{{ 'Update status'|t('trackr') }}</button>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="buttons">
+                {% if isPro %}
+                    <button type="button" class="btn" id="trackr-notify">{{ 'Email the customer'|t('trackr') }}</button>
+                {% endif %}
+                <button type="button" class="btn caution" id="trackr-delete">{{ 'Delete'|t('trackr') }}</button>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% js %}
+(function() {
+    var shipmentId = {{ shipment.id }};
+
+    function post(action, data, onDone) {
+        return Craft.sendActionRequest('POST', action, { data: data })
+            .then(function(response) {
+                Craft.cp.displayNotice(response.data.message || {{ 'Done.'|t('trackr')|json_encode|raw }});
+                if (onDone) { onDone(); }
+            })
+            .catch(function(e) {
+                Craft.cp.displayError(
+                    (e.response && e.response.data && e.response.data.message)
+                    || {{ 'That didn’t work.'|t('trackr')|json_encode|raw }}
+                );
+            });
+    }
+
+    var statusButton = document.getElementById('trackr-update-status');
+    if (statusButton) {
+        statusButton.addEventListener('click', function() {
+            post('trackr/shipments/update-status', {
+                shipmentId: shipmentId,
+                status: document.getElementById('trackr-status').value,
+                statusDetail: document.getElementById('trackr-status-detail').value
+            }, function() { window.location.reload(); });
+        });
+    }
+
+    var notifyButton = document.getElementById('trackr-notify');
+    if (notifyButton) {
+        notifyButton.addEventListener('click', function() {
+            post('trackr/shipments/notify', { shipmentId: shipmentId });
+        });
+    }
+
+    var deleteButton = document.getElementById('trackr-delete');
+    if (deleteButton) {
+        deleteButton.addEventListener('click', function() {
+            if (!confirm({{ 'Delete this shipment?'|t('trackr')|json_encode|raw }})) { return; }
+            post('trackr/shipments/delete', { shipmentId: shipmentId }, function() {
+                window.location.href = {{ url('trackr/shipments')|json_encode|raw }};
+            });
+        });
+    }
+})();
+{% endjs %}
