@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#ffffff">
+  <!-- Frame stripped: at watermark scale the icon's rounded-rect frame is ~70px of solid
+       colour and reads as a grey box across the slide. Route, parcel and pin only. -->
+  <!-- the route the parcel takes -->
+  <path d="M24 68 C 24 42, 48 46, 52 34"
+        fill="none" stroke="#ffffff" stroke-width="5"
+        stroke-linecap="round" stroke-dasharray="1 11"/>
+  <!-- the parcel, at the start of the route -->
+  <rect x="14" y="60" width="22" height="17" rx="2.5"/>
+  <!-- the pin, where it is now: drawn as an outline so the slide's gradient shows through the
+       centre, the way the icon's indigo dot does -->
+  <path d="M66 20 C 76.5 20, 85 28.5, 85 39 C 85 52, 66 72, 66 72 C 66 72, 47 52, 47 39 C 47 28.5, 55.5 20, 66 20 Z
+           M66 31 C 61.9 31, 58.5 34.4, 58.5 38.5 C 58.5 42.6, 61.9 46, 66 46 C 70.1 46, 73.5 42.6, 73.5 38.5 C 73.5 34.4, 70.1 31, 66 31 Z"
+        fill-rule="evenodd"/>
+</svg>

@@ -1,3 +1,7 @@
+{# Field names carry no `settings[…]` prefix: `craft\base\Plugin::settingsResponse()` runs this
+   template's output through `View::namespaceInputs(…, 'settings')`, so a name written as
+   `settings[foo]` here posts as `settings[settings][foo]` and saves nothing at all — the screen
+   looks perfect, Craft reports "Plugin settings saved", and every edit is silently discarded. #}
 {% import '_includes/forms' as forms %}
 
 {% set isPro = plugin.isPro() %}
@@ -36,7 +40,7 @@
         label: 'Shipped order status'|t('trackr'),
         instructions: 'Where an order goes once everything on it has shipped.'|t('trackr'),
         id: 'shippedStatusHandle',
-        name: 'settings[shippedStatusHandle]',
+        name: 'shippedStatusHandle',
         options: statusList,
         value: settings.shippedStatusHandle
     }) }}
@@ -45,7 +49,7 @@
         label: 'Partially shipped order status'|t('trackr'),
         instructions: 'Where an order sits while some of it is still to go. Pro.'|t('trackr'),
         id: 'partiallyShippedStatusHandle',
-        name: 'settings[partiallyShippedStatusHandle]',
+        name: 'partiallyShippedStatusHandle',
         options: statusList,
         value: settings.partiallyShippedStatusHandle,
         disabled: not isPro
@@ -55,7 +59,7 @@
         label: 'Delivered order status'|t('trackr'),
         instructions: 'Where an order goes once every shipment on it is marked delivered. Pro.'|t('trackr'),
         id: 'deliveredStatusHandle',
-        name: 'settings[deliveredStatusHandle]',
+        name: 'deliveredStatusHandle',
         options: statusList,
         value: settings.deliveredStatusHandle,
         disabled: not isPro
@@ -83,7 +87,7 @@
     label: 'Move the order when tracking is added'|t('trackr'),
     instructions: 'Off records tracking without touching the order’s status.'|t('trackr'),
     id: 'updateStatusOnTracking',
-    name: 'settings[updateStatusOnTracking]',
+    name: 'updateStatusOnTracking',
     on: settings.updateStatusOnTracking
 }) }}
 
@@ -91,7 +95,7 @@
     label: 'Count units for partial shipments'|t('trackr'),
     instructions: 'Holds an order at the partially shipped status until every shippable unit is covered. Pro.'|t('trackr'),
     id: 'partialShipmentsEnabled',
-    name: 'settings[partialShipmentsEnabled]',
+    name: 'partialShipmentsEnabled',
     on: settings.partialShipmentsEnabled,
     disabled: not isPro
 }) }}
@@ -100,7 +104,7 @@
     label: 'Write a note on the order history'|t('trackr'),
     instructions: 'Records the carrier and tracking number against the order, even when the status does not move.'|t('trackr'),
     id: 'addOrderHistoryNote',
-    name: 'settings[addOrderHistoryNote]',
+    name: 'addOrderHistoryNote',
     on: settings.addOrderHistoryNote
 }) }}
 
@@ -108,7 +112,7 @@
     label: 'Default carrier'|t('trackr'),
     instructions: 'Pre-selected on the order screen.'|t('trackr'),
     id: 'defaultProvider',
-    name: 'settings[defaultProvider]',
+    name: 'defaultProvider',
     options: plugin.providers.getSelectOptions(),
     value: settings.defaultProvider
 }) }}
@@ -116,7 +120,7 @@
 {{ forms.selectField({
     label: 'New shipments start as'|t('trackr'),
     id: 'defaultShipmentStatus',
-    name: 'settings[defaultShipmentStatus]',
+    name: 'defaultShipmentStatus',
     options: plugin.shipmentStatusOptions(),
     value: settings.defaultShipmentStatus
 }) }}
@@ -125,7 +129,7 @@
     label: 'Detect the carrier from the tracking number'|t('trackr'),
     instructions: 'Used when a CSV row or an API call gives a tracking number but no carrier. Trackr only guesses when exactly one carrier’s pattern matches. Pro.'|t('trackr'),
     id: 'autoDetectProvider',
-    name: 'settings[autoDetectProvider]',
+    name: 'autoDetectProvider',
     on: settings.autoDetectProvider,
     disabled: not isPro
 }) }}
@@ -134,7 +138,7 @@
     label: 'Preferred country'|t('trackr'),
     instructions: 'Two-letter code. Carriers from this country sort to the top of the picker.'|t('trackr'),
     id: 'preferredCountry',
-    name: 'settings[preferredCountry]',
+    name: 'preferredCountry',
     value: settings.preferredCountry,
     size: 6,
     placeholder: 'US'
@@ -160,14 +164,14 @@
 {{ forms.textField({
     label: 'Heading'|t('trackr'),
     id: 'widgetTitle',
-    name: 'settings[widgetTitle]',
+    name: 'widgetTitle',
     value: settings.widgetTitle
 }) }}
 
 {{ forms.selectField({
     label: 'Layout'|t('trackr'),
     id: 'widgetLayout',
-    name: 'settings[widgetLayout]',
+    name: 'widgetLayout',
     options: [
         { label: 'Cards'|t('trackr'), value: 'card' },
         { label: 'Compact list'|t('trackr'), value: 'list' },
@@ -177,25 +181,25 @@
 }) }}
 
 <div class="flex" style="gap: 14px; flex-wrap: wrap;">
-    {{ forms.textField({ label: 'Accent'|t('trackr'), id: 'widgetAccentColor', name: 'settings[widgetAccentColor]', value: settings.widgetAccentColor, size: 9, class: 'code' }) }}
-    {{ forms.textField({ label: 'Text'|t('trackr'), id: 'widgetTextColor', name: 'settings[widgetTextColor]', value: settings.widgetTextColor, size: 9, class: 'code' }) }}
-    {{ forms.textField({ label: 'Muted text'|t('trackr'), id: 'widgetMutedColor', name: 'settings[widgetMutedColor]', value: settings.widgetMutedColor, size: 9, class: 'code' }) }}
-    {{ forms.textField({ label: 'Background'|t('trackr'), id: 'widgetBackgroundColor', name: 'settings[widgetBackgroundColor]', value: settings.widgetBackgroundColor, size: 9, class: 'code' }) }}
-    {{ forms.textField({ label: 'Border'|t('trackr'), id: 'widgetBorderColor', name: 'settings[widgetBorderColor]', value: settings.widgetBorderColor, size: 9, class: 'code' }) }}
-    {{ forms.textField({ label: 'Button text'|t('trackr'), id: 'widgetButtonTextColor', name: 'settings[widgetButtonTextColor]', value: settings.widgetButtonTextColor, size: 9, class: 'code' }) }}
-    {{ forms.textField({ label: 'Corner radius'|t('trackr'), id: 'widgetRadius', name: 'settings[widgetRadius]', value: settings.widgetRadius, size: 6, class: 'code' }) }}
+    {{ forms.textField({ label: 'Accent'|t('trackr'), id: 'widgetAccentColor', name: 'widgetAccentColor', value: settings.widgetAccentColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Text'|t('trackr'), id: 'widgetTextColor', name: 'widgetTextColor', value: settings.widgetTextColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Muted text'|t('trackr'), id: 'widgetMutedColor', name: 'widgetMutedColor', value: settings.widgetMutedColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Background'|t('trackr'), id: 'widgetBackgroundColor', name: 'widgetBackgroundColor', value: settings.widgetBackgroundColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Border'|t('trackr'), id: 'widgetBorderColor', name: 'widgetBorderColor', value: settings.widgetBorderColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Button text'|t('trackr'), id: 'widgetButtonTextColor', name: 'widgetButtonTextColor', value: settings.widgetButtonTextColor, size: 9, class: 'code' }) }}
+    {{ forms.textField({ label: 'Corner radius'|t('trackr'), id: 'widgetRadius', name: 'widgetRadius', value: settings.widgetRadius, size: 6, class: 'code' }) }}
 </div>
 
-{{ forms.checkboxField({ label: 'Show the delivery status'|t('trackr'), id: 'widgetShowStatus', name: 'settings[widgetShowStatus]', checked: settings.widgetShowStatus }) }}
-{{ forms.checkboxField({ label: 'Show the ship date'|t('trackr'), id: 'widgetShowShipDate', name: 'settings[widgetShowShipDate]', checked: settings.widgetShowShipDate }) }}
-{{ forms.checkboxField({ label: 'Show the shipping service'|t('trackr'), id: 'widgetShowService', name: 'settings[widgetShowService]', checked: settings.widgetShowService }) }}
-{{ forms.checkboxField({ label: 'Show carrier logos'|t('trackr'), id: 'widgetShowProviderLogo', name: 'settings[widgetShowProviderLogo]', checked: settings.widgetShowProviderLogo }) }}
-{{ forms.checkboxField({ label: 'Show a tracking button'|t('trackr'), id: 'widgetShowTrackButton', name: 'settings[widgetShowTrackButton]', checked: settings.widgetShowTrackButton }) }}
+{{ forms.checkboxField({ label: 'Show the delivery status'|t('trackr'), id: 'widgetShowStatus', name: 'widgetShowStatus', checked: settings.widgetShowStatus }) }}
+{{ forms.checkboxField({ label: 'Show the ship date'|t('trackr'), id: 'widgetShowShipDate', name: 'widgetShowShipDate', checked: settings.widgetShowShipDate }) }}
+{{ forms.checkboxField({ label: 'Show the shipping service'|t('trackr'), id: 'widgetShowService', name: 'widgetShowService', checked: settings.widgetShowService }) }}
+{{ forms.checkboxField({ label: 'Show carrier logos'|t('trackr'), id: 'widgetShowProviderLogo', name: 'widgetShowProviderLogo', checked: settings.widgetShowProviderLogo }) }}
+{{ forms.checkboxField({ label: 'Show a tracking button'|t('trackr'), id: 'widgetShowTrackButton', name: 'widgetShowTrackButton', checked: settings.widgetShowTrackButton }) }}
 
 {{ forms.textField({
     label: 'Button label'|t('trackr'),
     id: 'widgetButtonLabel',
-    name: 'settings[widgetButtonLabel]',
+    name: 'widgetButtonLabel',
     value: settings.widgetButtonLabel
 }) }}
 
@@ -203,7 +207,7 @@
     label: 'Footer text'|t('trackr'),
     instructions: 'Shown under the shipments. Somewhere to say how long carrier scans take to appear.'|t('trackr'),
     id: 'widgetFooterText',
-    name: 'settings[widgetFooterText]',
+    name: 'widgetFooterText',
     value: settings.widgetFooterText
 }) }}
 
@@ -211,7 +215,7 @@
     label: 'Widget template override'|t('trackr'),
     instructions: 'A site template rendered instead of Trackr’s markup. It receives `order`, `shipments`, `settings`, `styles`, `progress` and `trackingPageUrl`.'|t('trackr'),
     id: 'widgetTemplate',
-    name: 'settings[widgetTemplate]',
+    name: 'widgetTemplate',
     value: settings.widgetTemplate,
     class: 'code',
     placeholder: '_partials/tracking'
@@ -225,7 +229,7 @@
     label: 'Serve a customer tracking page'|t('trackr'),
     instructions: 'A page guests can look their order up on, without an account.'|t('trackr'),
     id: 'trackingPageEnabled',
-    name: 'settings[trackingPageEnabled]',
+    name: 'trackingPageEnabled',
     on: settings.trackingPageEnabled
 }) }}
 
@@ -233,7 +237,7 @@
     label: 'Tracking page URI'|t('trackr'),
     instructions: 'Currently at {url}.'|t('trackr', { url: settings.getTrackingPageUrl() }),
     id: 'trackingPageUri',
-    name: 'settings[trackingPageUri]',
+    name: 'trackingPageUri',
     value: settings.trackingPageUri,
     class: 'code'
 }) }}
@@ -242,7 +246,7 @@
     label: 'Tracking page template override'|t('trackr'),
     instructions: 'A site template rendered instead of Trackr’s own page.'|t('trackr'),
     id: 'trackingPageTemplate',
-    name: 'settings[trackingPageTemplate]',
+    name: 'trackingPageTemplate',
     value: settings.trackingPageTemplate,
     class: 'code'
 }) }}
@@ -251,7 +255,7 @@
     label: 'Require the email address on the order'|t('trackr'),
     instructions: 'Strongly recommended. Order numbers are guessable; turning this off makes every order’s fulfilment readable by anyone.'|t('trackr'),
     id: 'trackingRequireEmail',
-    name: 'settings[trackingRequireEmail]',
+    name: 'trackingRequireEmail',
     on: settings.trackingRequireEmail
 }) }}
 
@@ -259,7 +263,7 @@
     {{ forms.textField({
         label: 'Failed lookups allowed'|t('trackr'),
         id: 'trackingMaxAttempts',
-        name: 'settings[trackingMaxAttempts]',
+        name: 'trackingMaxAttempts',
         value: settings.trackingMaxAttempts,
         size: 5,
         type: 'number'
@@ -268,7 +272,7 @@
     {{ forms.textField({
         label: '…within this many seconds'|t('trackr'),
         id: 'trackingAttemptWindow',
-        name: 'settings[trackingAttemptWindow]',
+        name: 'trackingAttemptWindow',
         value: settings.trackingAttemptWindow,
         size: 7,
         type: 'number'
@@ -288,7 +292,7 @@
 {{ forms.lightswitchField({
     label: 'Email the customer when a shipment is recorded'|t('trackr'),
     id: 'notifyOnShipment',
-    name: 'settings[notifyOnShipment]',
+    name: 'notifyOnShipment',
     on: settings.notifyOnShipment,
     disabled: not isPro
 }) }}
@@ -297,14 +301,14 @@
     label: 'Shipment email subject'|t('trackr'),
     instructions: 'Placeholders: `{orderNumber}`, `{trackingNumber}`, `{provider}`, `{siteName}`.'|t('trackr'),
     id: 'shipmentEmailSubject',
-    name: 'settings[shipmentEmailSubject]',
+    name: 'shipmentEmailSubject',
     value: settings.shipmentEmailSubject
 }) }}
 
 {{ forms.textField({
     label: 'Shipment email template'|t('trackr'),
     id: 'shipmentEmailTemplate',
-    name: 'settings[shipmentEmailTemplate]',
+    name: 'shipmentEmailTemplate',
     value: settings.shipmentEmailTemplate,
     class: 'code'
 }) }}
@@ -312,7 +316,7 @@
 {{ forms.lightswitchField({
     label: 'Email the customer when a shipment is delivered'|t('trackr'),
     id: 'notifyOnDelivery',
-    name: 'settings[notifyOnDelivery]',
+    name: 'notifyOnDelivery',
     on: settings.notifyOnDelivery,
     disabled: not isPro
 }) }}
@@ -320,14 +324,14 @@
 {{ forms.textField({
     label: 'Delivery email subject'|t('trackr'),
     id: 'deliveryEmailSubject',
-    name: 'settings[deliveryEmailSubject]',
+    name: 'deliveryEmailSubject',
     value: settings.deliveryEmailSubject
 }) }}
 
 {{ forms.textField({
     label: 'Delivery email template'|t('trackr'),
     id: 'deliveryEmailTemplate',
-    name: 'settings[deliveryEmailTemplate]',
+    name: 'deliveryEmailTemplate',
     value: settings.deliveryEmailTemplate,
     class: 'code'
 }) }}
@@ -340,7 +344,7 @@
     label: 'The order number column holds'|t('trackr'),
     instructions: 'Leave on automatic unless your supplier sends something ambiguous.'|t('trackr'),
     id: 'csvOrderNumberSource',
-    name: 'settings[csvOrderNumberSource]',
+    name: 'csvOrderNumberSource',
     options: [
         { label: 'Whatever matches'|t('trackr'), value: 'auto' },
         { label: 'Order reference'|t('trackr'), value: 'reference' },
@@ -355,7 +359,7 @@
     label: 'Watched folder'|t('trackr'),
     instructions: 'A server path polled by `php craft trackr/import/watch`. Pro.'|t('trackr'),
     id: 'importWatchPath',
-    name: 'settings[importWatchPath]',
+    name: 'importWatchPath',
     value: settings.importWatchPath,
     suggestEnvVars: true,
     disabled: not isPro
@@ -365,7 +369,7 @@
     label: 'Keep imported files'|t('trackr'),
     instructions: 'Moves them into a `processed/` subfolder instead of deleting them.'|t('trackr'),
     id: 'importArchiveProcessed',
-    name: 'settings[importArchiveProcessed]',
+    name: 'importArchiveProcessed',
     on: settings.importArchiveProcessed
 }) }}
 
@@ -389,7 +393,7 @@
 {{ forms.lightswitchField({
     label: 'Accept pushed tracking'|t('trackr'),
     id: 'apiEnabled',
-    name: 'settings[apiEnabled]',
+    name: 'apiEnabled',
     on: settings.apiEnabled,
     disabled: not isPro
 }) }}
@@ -398,7 +402,7 @@
     label: 'API token'|t('trackr'),
     instructions: 'With no token the endpoint rejects everything, which is the safe default.'|t('trackr'),
     id: 'apiToken',
-    name: 'settings[apiToken]',
+    name: 'apiToken',
     value: settings.apiToken,
     suggestEnvVars: true,
     disabled: not isPro
@@ -416,7 +420,7 @@
 {{ forms.lightswitchField({
     label: 'Log activity'|t('trackr'),
     id: 'loggingEnabled',
-    name: 'settings[loggingEnabled]',
+    name: 'loggingEnabled',
     on: settings.loggingEnabled
 }) }}
 
@@ -424,7 +428,7 @@
     label: 'Keep payloads'|t('trackr'),
     instructions: 'Stores what each API call and import row contained. Pro.'|t('trackr'),
     id: 'logPayloads',
-    name: 'settings[logPayloads]',
+    name: 'logPayloads',
     on: settings.logPayloads,
     disabled: not isPro
 }) }}
@@ -433,7 +437,7 @@
     label: 'Days of history to keep'|t('trackr'),
     instructions: '0 keeps everything. Lite keeps 7 days regardless.'|t('trackr'),
     id: 'logRetentionDays',
-    name: 'settings[logRetentionDays]',
+    name: 'logRetentionDays',
     value: settings.logRetentionDays,
     size: 5,
     type: 'number'

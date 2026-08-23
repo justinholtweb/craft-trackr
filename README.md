@@ -29,6 +29,7 @@ email.
 
 | | Lite (free) | Pro |
 |---|---|---|
+| **Price** | **Free** | **$99**, $49/year renewal |
 | Tracking on Commerce's own order screen | ✅ | ✅ |
 | 130 built-in carriers with tracking links | ✅ | ✅ |
 | Multiple tracking numbers per order | ✅ | ✅ |
@@ -233,4 +234,4 @@ Event::on(Shipments::class, Shipments::EVENT_AFTER_UPDATE_STATUS, function(Shipm
 
 ## License
 
-Proprietary. Lite is free; Pro is a paid edition.
+Proprietary. Lite is free; Pro is a one-off $99 with a $49/year renewal.

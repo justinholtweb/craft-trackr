@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<!-- handmade: hand-tuned deck -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trackr — Plugin Store promos</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --charcoal: #0f0f1a;
+    --charcoal-light: #1a1a2e;
+    --charcoal-lighter: #252540;
+    --accent: #3f4ea8;
+    --accent-light: #6b7bd6;
+    --amber: #f0a63c;
+    --off-white: #f0f0f5;
+  }
+
+  html { background: #000; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--off-white);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- slide shell ---------------------------------------------------- */
+  .slide {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 85% 15%, rgba(63, 78, 168, 0.28) 0%, transparent 40%),
+      radial-gradient(ellipse at 65% 5%,  rgba(107, 123, 214, 0.16) 0%, transparent 35%),
+      radial-gradient(ellipse at 15% 85%, rgba(240, 166, 60, 0.08) 0%, transparent 40%),
+      radial-gradient(ellipse at 35% 95%, rgba(63, 78, 168, 0.10) 0%, transparent 35%),
+      linear-gradient(135deg, #0f0f1a 0%, #131530 30%, #15173a 60%, #0f0f1a 100%);
+  }
+
+  /* Oversized watermark, echoing the app icon */
+  .slide::after {
+    content: '';
+    position: absolute;
+    top: -14%;
+    left: -24%;
+    width: 1180px;
+    height: 1180px;
+    background: url('assets/watermark.svg') no-repeat center / contain;
+    opacity: 0.042;
+    pointer-events: none;
+  }
+
+  /* Hairline along the top edge */
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light), var(--amber), var(--accent));
+    z-index: 5;
+  }
+
+  .inner {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    padding: 118px 130px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ---- type ------------------------------------------------------------ */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(240, 240, 245, 0.62);
+    margin-bottom: 34px;
+  }
+  .eyebrow .rule {
+    width: 58px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--accent-light);
+  }
+
+  h1, h2 {
+    font-family: 'Jersey 20', sans-serif;
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: 0.005em;
+  }
+
+  .gradient-text {
+    background: linear-gradient(100deg, #7d8ce0 0%, #9fabf0 26%, #f0a63c 58%, #b98be0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .lede {
+    font-size: 34px;
+    line-height: 1.5;
+    color: rgba(240, 240, 245, 0.72);
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  /* ---- cover slide ----------------------------------------------------- */
+  .cover .inner { gap: 90px; }
+  .cover .copy { flex: 1 1 auto; }
+  .cover h1 { font-size: 210px; margin-bottom: 26px; }
+  .cover .tagline {
+    font-family: 'Jersey 20', sans-serif;
+    font-size: 60px;
+    line-height: 1.02;
+    color: var(--off-white);
+    margin-bottom: 40px;
+    max-width: 15ch;
+  }
+  .cover .lede { max-width: 27ch; font-size: 30px; }
+
+  .cover .mark {
+    flex: 0 0 auto;
+    width: 460px;
+    height: 460px;
+    filter: drop-shadow(14px 14px 0 rgba(0, 0, 0, 0.35));
+  }
+  .cover .mark img { width: 100%; height: 100%; display: block; }
+
+  .badges { display: flex; gap: 16px; margin-top: 52px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 26px;
+    font-size: 22px;
+    font-weight: 500;
+    color: rgba(240, 240, 245, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
+  }
+  .badge .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent-light);
+  }
+
+  /* ---- the funnel statement -------------------------------------------- */
+  .statement .inner { flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .statement .eyebrow { justify-content: center; }
+
+  .funnel { display: flex; flex-direction: column; align-items: center; gap: 26px; margin-top: 4px; }
+  .funnel .caption {
+    font-size: 26px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(240, 240, 245, 0.42);
+  }
+  .sources { display: flex; gap: 20px; }
+  .source {
+    padding: 26px 40px;
+    border-radius: 16px;
+    background: rgba(37, 37, 64, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 30px;
+    color: rgba(240, 240, 245, 0.78);
+  }
+  .funnel .arrow {
+    width: 4px;
+    height: 62px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, rgba(107,123,214,0.15), var(--accent-light));
+    position: relative;
+  }
+  .funnel .arrow::after {
+    content: '';
+    position: absolute;
+    left: 50%; bottom: -4px;
+    width: 18px; height: 18px;
+    transform: translateX(-50%) rotate(45deg);
+    border-right: 4px solid var(--accent-light);
+    border-bottom: 4px solid var(--accent-light);
+    border-radius: 2px;
+  }
+  .funnel .after {
+    font-size: 116px;
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+  .statement .lede { margin-top: 38px; max-width: 40ch; font-size: 32px; }
+
+  /* ---- feature slides -------------------------------------------------- */
+  .feature .inner { align-items: center; }
+  .feature .copy { width: 780px; flex: 0 0 780px; }
+  .feature h2 { font-size: 108px; margin-bottom: 30px; }
+  .feature .lede { max-width: 21ch; }
+
+  .points {
+    list-style: none;
+    max-width: 700px;
+    margin-top: 44px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    font-size: 25px;
+    line-height: 1.4;
+    color: rgba(240, 240, 245, 0.6);
+  }
+  .points li .tick {
+    flex: 0 0 auto;
+    margin-top: 9px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent-light);
+  }
+
+  /* Right-hand panel shared by the carrier, widget, page and API slides */
+  .panel {
+    position: absolute;
+    top: 50%;
+    left: 900px;
+    right: 130px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .note {
+    font-size: 24px;
+    line-height: 1.5;
+    color: rgba(240, 240, 245, 0.45);
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  /* ---- carrier rows ---------------------------------------------------- */
+  .carrier-row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 30px 38px;
+    border-radius: 16px;
+    background: rgba(37, 37, 64, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .carrier-row .who {
+    flex: 0 0 168px;
+    font-size: 27px;
+    font-weight: 600;
+    color: var(--off-white);
+  }
+  .carrier-row .num { flex: 1 1 auto; font-size: 28px; color: rgba(240, 240, 245, 0.55); }
+  .carrier-row .to { color: var(--accent-light); font-size: 28px; flex: 0 0 auto; }
+  .carrier-row .link { flex: 0 0 auto; font-size: 25px; color: var(--accent-light); }
+  .carrier-row.plain .link { color: rgba(240, 240, 245, 0.35); }
+
+  .count-strip {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 20px;
+    padding: 26px 0 4px;
+  }
+  .count-strip .big {
+    font-family: 'Jersey 20', sans-serif;
+    font-size: 92px;
+    line-height: 1;
+    color: var(--amber);
+  }
+  .count-strip .cap { font-size: 26px; color: rgba(240, 240, 245, 0.45); letter-spacing: 0.06em; }
+
+  /* ---- email widget mock ------------------------------------------------ */
+  .mail {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+    background: #ffffff;
+  }
+  .mail .subject {
+    padding: 26px 38px;
+    background: #eef0f6;
+    border-bottom: 1px solid #dde3e8;
+    font-size: 23px;
+    color: #6b7a89;
+  }
+  .mail .subject b { color: #1f2933; font-weight: 600; }
+  .mail .pad { padding: 40px 44px 46px; }
+
+  .wdg {
+    border: 1px solid #dde3e8;
+    border-radius: 6px;
+    background: #f7f9fa;
+    padding: 32px 34px;
+  }
+  .wdg .h {
+    font-size: 30px;
+    font-weight: 700;
+    color: #1f2933;
+    margin-bottom: 26px;
+  }
+  .wdg .card {
+    background: #ffffff;
+    border: 1px solid #dde3e8;
+    border-radius: 6px;
+    padding: 26px 28px;
+    display: flex;
+    align-items: center;
+    gap: 26px;
+  }
+  .wdg .card + .card { margin-top: 16px; }
+  .wdg .who { font-size: 25px; font-weight: 700; color: #1f2933; }
+  .wdg .no { font-size: 23px; color: #6b7a89; margin-top: 8px; }
+  .wdg .meta { flex: 1 1 auto; }
+  .wdg .pill {
+    font-size: 19px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: #e8ecfa;
+    color: #3f4ea8;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .wdg .pill.done { background: #e4f5ea; color: #1f7a45; }
+  .wdg .btn {
+    font-size: 21px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #3f4ea8;
+    border-radius: 6px;
+    padding: 15px 26px;
+    white-space: nowrap;
+  }
+
+  /* ---- tracking page mock ------------------------------------------------ */
+  .browser {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .browser .bar {
+    height: 62px;
+    background: #2a2a3e;
+    display: flex;
+    align-items: center;
+    padding: 0 26px;
+    gap: 12px;
+  }
+  .browser .bar i {
+    width: 13px; height: 13px; border-radius: 50%; display: block;
+  }
+  .browser .bar .u {
+    flex: 1 1 auto;
+    margin-left: 18px;
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 20px;
+    color: rgba(240, 240, 245, 0.5);
+  }
+  .browser .page { background: #ffffff; padding: 52px 56px 58px; }
+  .browser .page h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 34px;
+    font-weight: 700;
+    color: #1f2933;
+    margin-bottom: 10px;
+  }
+  .browser .page p { font-size: 22px; color: #6b7a89; margin-bottom: 32px; }
+  .field {
+    border: 1px solid #dde3e8;
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-size: 23px;
+    color: #1f2933;
+    background: #fbfcfd;
+  }
+  .field + .field { margin-top: 16px; }
+  .field .lab { display: block; font-size: 17px; color: #97a3b0; margin-bottom: 8px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .browser .go {
+    margin-top: 24px;
+    display: inline-block;
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    background: #3f4ea8;
+    border-radius: 6px;
+    padding: 17px 34px;
+  }
+
+  /* ---- shield notes ------------------------------------------------------ */
+  .shield {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    font-size: 23px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(240, 240, 245, 0.42);
+  }
+  .shield .bar { flex: 1 1 auto; height: 1px; background: rgba(255,255,255,0.1); }
+
+  /* ---- item-level table --------------------------------------------------- */
+  .sheet {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+  }
+  .sheet .head {
+    display: flex;
+    padding: 26px 38px;
+    background: rgba(63, 78, 168, 0.22);
+    font-size: 22px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(240, 240, 245, 0.6);
+  }
+  .sheet .row {
+    display: flex;
+    align-items: center;
+    padding: 26px 38px;
+    background: rgba(37, 37, 64, 0.55);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 29px;
+  }
+  .sheet .c1 { flex: 1 1 auto; color: var(--off-white); }
+  .sheet .c2 { flex: 0 0 200px; color: rgba(240, 240, 245, 0.45); }
+  .sheet .c3 { flex: 0 0 250px; color: var(--accent-light); }
+  .sheet .row.out .c3 { color: var(--amber); }
+  .sheet .row.skip .c1,
+  .sheet .row.skip .c2 { color: rgba(240, 240, 245, 0.3); }
+  .sheet .row.skip .c3 { color: rgba(240, 240, 245, 0.3); }
+
+  .meter {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 6px 4px 0;
+  }
+  .meter .track {
+    flex: 1 1 auto;
+    height: 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+  .meter .fill {
+    display: block;   /* a bare <span> is inline — width/height would be ignored */
+    height: 100%;
+    width: 50%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent-light), var(--amber));
+  }
+  .meter .pct { font-size: 27px; color: rgba(240, 240, 245, 0.6); flex: 0 0 auto; }
+
+  /* ---- terminal --------------------------------------------------------- */
+  .term {
+    position: absolute;
+    top: 50%;
+    left: 900px;
+    right: -110px;
+    transform: translateY(-50%);
+    border-radius: 14px; overflow: hidden; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); }
+  .term .chrome {
+    height: 44px;
+    background: #2a2a3e;
+    background-image:
+      radial-gradient(circle at 26px 22px, #ff5f57 6.5px, transparent 7px),
+      radial-gradient(circle at 52px 22px, #ffbd2e 6.5px, transparent 7px),
+      radial-gradient(circle at 78px 22px, #28ca42 6.5px, transparent 7px);
+  }
+  .term .body {
+    background: #12121f;
+    padding: 42px 44px;
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 23px;
+    line-height: 1.95;
+  }
+  .term .prompt { color: var(--accent-light); }
+  .term .cmd { color: var(--off-white); }
+  .term .out { color: rgba(240, 240, 245, 0.45); }
+  .term .ok { color: #4ade80; }
+  .term .warn { color: var(--amber); }
+  .term .blank { display: block; height: 20px; }
+
+  /* ---- footer lockup --------------------------------------------------- */
+  .footer {
+    position: absolute;
+    left: 130px;
+    bottom: 62px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: rgba(240, 240, 245, 0.4);
+  }
+  .footer img { width: 40px; height: 40px; border-radius: 9px; }
+  .footer b { color: rgba(240, 240, 245, 0.72); font-weight: 600; }
+
+  /* Only render the requested slide when screenshotting */
+  body.single .slide { display: none; }
+  body.single .slide.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- 1 · Cover ============================================================ -->
+<section class="slide cover" data-n="1">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> Craft Commerce 5</div>
+      <h1 class="gradient-text">Trackr</h1>
+      <p class="tagline">Tracking numbers your customers can actually follow.</p>
+      <p class="lede">Carrier-agnostic shipment tracking — 130 carriers, an email widget, and a tracking page that needs no account.</p>
+      <div class="badges">
+        <span class="badge"><span class="dot"></span> Lite free &nbsp;·&nbsp; Pro $99</span>
+        <span class="badge">Craft 5.3+ · Commerce 5 · PHP 8.2+</span>
+      </div>
+    </div>
+    <div class="mark"><img src="assets/icon.svg" alt=""></div>
+  </div>
+</section>
+
+<!-- 2 · Four ways in ===================================================== -->
+<section class="slide statement" data-n="2">
+  <div class="inner">
+    <div class="eyebrow"><span class="rule"></span> The whole idea</div>
+    <div class="funnel">
+      <span class="caption">Tracking arrives</span>
+      <div class="sources">
+        <span class="source">By hand</span>
+        <span class="source">By CSV</span>
+        <span class="source">By API</span>
+        <span class="source">By console</span>
+      </div>
+      <span class="arrow"></span>
+      <span class="caption">And lands in exactly one place</span>
+      <span class="after mono gradient-text">Shipments::record()</span>
+    </div>
+    <p class="lede">So the same number sent twice updates one shipment instead of creating a second — which
+      matters, because fulfilment services retry and merchants re-upload spreadsheets.</p>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Trackr</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-trackr</div>
+</section>
+
+<!-- 3 · Carriers ========================================================= -->
+<section class="slide feature" data-n="3">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> Carriers</div>
+      <h2>130 carriers,<br>already in</h2>
+      <p class="lede">Six continents, plus LTL freight, print-on-demand and the aggregators.</p>
+      <ul class="points">
+        <li><span class="tick"></span> Switch off the ones you never use so the picker stays short</li>
+        <li><span class="tick"></span> Rename, re-point or add your own — including one with no URL at all</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="carrier-row"><span class="who">UPS</span><span class="num mono">1Z999AA10123456784</span><span class="to">&rarr;</span><span class="link">Track &nearr;</span></div>
+    <div class="carrier-row"><span class="who">USPS</span><span class="num mono">9400111899223197428490</span><span class="to">&rarr;</span><span class="link">Track &nearr;</span></div>
+    <div class="carrier-row"><span class="who">DHL Express</span><span class="num mono">7712345678</span><span class="to">&rarr;</span><span class="link">Track &nearr;</span></div>
+    <div class="carrier-row plain"><span class="who">Our van</span><span class="num mono">DROP-4471</span><span class="to">&rarr;</span><span class="link">no link, by design</span></div>
+    <p class="note">A carrier Trackr does not recognise is still recorded — a link that 404s is worse than no link.</p>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Trackr</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-trackr</div>
+</section>
+
+<!-- 4 · The widget ======================================================= -->
+<section class="slide feature" data-n="4">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> In the order email</div>
+      <h2>One line in<br>your template</h2>
+      <p class="lede"><span class="mono">{{&nbsp;craft.trackr.widget(order)&nbsp;}}</span> — and that is the whole
+        integration.</p>
+      <ul class="points">
+        <li><span class="tick"></span> Table markup with inline styles, because it lives in email clients</li>
+        <li><span class="tick"></span> Colours, layout and fields are settings, with a live preview</li>
+        <li><span class="tick"></span> Or point it at your own template and keep the data</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="mail">
+      <div class="subject">Subject: &nbsp;<b>Your order CT-1042 has shipped</b></div>
+      <div class="pad">
+        <div class="wdg">
+          <div class="h">Track your order</div>
+          <div class="card">
+            <div class="meta">
+              <div class="who">UPS &nbsp;·&nbsp; Ground</div>
+              <div class="no mono">1Z999AA10123456784</div>
+            </div>
+            <span class="pill">In transit</span>
+            <span class="btn">Track shipment</span>
+          </div>
+          <div class="card">
+            <div class="meta">
+              <div class="who">USPS &nbsp;·&nbsp; Priority Mail</div>
+              <div class="no mono">9400111899223197428490</div>
+            </div>
+            <span class="pill done">Delivered</span>
+            <span class="btn">Track shipment</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Trackr</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-trackr</div>
+</section>
+
+<!-- 5 · Tracking page ==================================================== -->
+<section class="slide feature" data-n="5">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> For the customer</div>
+      <h2>No account<br>needed</h2>
+      <p class="lede">Most Commerce stores take guest orders. A guest who cannot log in still wants to know where
+        the parcel is.</p>
+      <ul class="points">
+        <li><span class="tick"></span> Order number <em>and</em> the email on the order</li>
+        <li><span class="tick"></span> A link from the email skips the form entirely</li>
+        <li><span class="tick"></span> Failed lookups are throttled per IP</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="browser">
+      <div class="bar">
+        <i style="background:#ff5f57"></i><i style="background:#ffbd2e"></i><i style="background:#28ca42"></i>
+        <span class="u">https://example.com/track</span>
+      </div>
+      <div class="page">
+        <h3>Track your order</h3>
+        <p>Enter your order number and the email address you ordered with.</p>
+        <div class="field"><span class="lab">Order number</span>CT-1042</div>
+        <div class="field"><span class="lab">Email</span>sam@example.com</div>
+        <span class="go">Find my order</span>
+      </div>
+    </div>
+    <div class="shield"><span class="bar"></span> Every failure answers identically <span class="bar"></span></div>
+    <p class="note">Telling a stranger that an order number exists but the email is wrong tells them the order
+      number exists.</p>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Trackr</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-trackr</div>
+</section>
+
+<!-- 6 · Item-level tracking ============================================== -->
+<section class="slide feature" data-n="6">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> Item-level &nbsp;·&nbsp; Pro</div>
+      <h2>Half an order<br>is not shipped</h2>
+      <p class="lede">Say which line items and how many are in the box. The order holds at partially shipped
+        until the units add up.</p>
+      <ul class="points">
+        <li><span class="tick"></span> Digital goods are excluded, or an order could never finish</li>
+        <li><span class="tick"></span> The rollup is recalculated on every write, never incremented</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="sheet">
+      <div class="head"><span class="c1">Line item</span><span class="c2">Ordered</span><span class="c3">Shipped</span></div>
+      <div class="row"><span class="c1">Enamel mug</span><span class="c2">2</span><span class="c3">2 &nbsp;·&nbsp; UPS</span></div>
+      <div class="row"><span class="c1">Canvas tote</span><span class="c2">1</span><span class="c3">1 &nbsp;·&nbsp; UPS</span></div>
+      <div class="row out"><span class="c1">Wool blanket</span><span class="c2">3</span><span class="c3">0 &nbsp;·&nbsp; to follow</span></div>
+      <div class="row skip"><span class="c1">Care guide (PDF)</span><span class="c2">1</span><span class="c3">not shippable</span></div>
+    </div>
+    <div class="meter"><span class="track"><span class="fill"></span></span><span class="pct">3 of 6 units &nbsp;·&nbsp; partially shipped</span></div>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Trackr</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-trackr</div>
+</section>
+
+<!-- 7 · API + console ==================================================== -->
+<section class="slide feature" data-n="7">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> Push API &amp; console</div>
+      <h2>Let the 3PL<br>do the typing</h2>
+      <p class="lede">Point your fulfilment service, ERP or label printer at one endpoint — or drop a CSV in a
+        watched folder and put it on cron.</p>
+    </div>
+  </div>
+  <div class="term">
+    <div class="chrome"></div>
+    <div class="body">
+      <div><span class="prompt">$</span> <span class="cmd">curl -X POST /actions/trackr/api/shipments -d @ship.json</span></div>
+      <div class="out"><span class="ok">201 Created</span> &nbsp; CT-1042 &nbsp;·&nbsp; UPS &nbsp;·&nbsp; 1Z999AA10123456784</div>
+      <div class="out">same call again &rarr; <span class="warn">200 OK</span> &nbsp; updated, not duplicated</div>
+      <span class="blank"></span>
+      <div><span class="prompt">$</span> <span class="cmd">php craft trackr/import/csv tracking.csv --dry-run</span></div>
+      <div class="out">184 rows &nbsp;·&nbsp; 179 new, 5 updates. <span class="ok">Nothing written.</span></div>
+      <span class="blank"></span>
+      <div><span class="prompt">$</span> <span class="cmd">php craft trackr/import/watch</span></div>
+      <div class="out">3 file(s): 212 added, 0 failed &nbsp;·&nbsp; archived</div>
+    </div>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Trackr</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-trackr</div>
+</section>
+
+<script>
+  var n = new URLSearchParams(location.search).get('s');
+  if (n) {
+    document.body.classList.add('single');
+    var el = document.querySelector('.slide[data-n="' + n + '"]');
+    if (el) el.classList.add('active');
+  }
+</script>
+</body>
+</html>

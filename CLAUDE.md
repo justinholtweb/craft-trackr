@@ -4,7 +4,7 @@
 
 Trackr is the tracking layer for Craft Commerce 5: tracking numbers get onto orders from anywhere,
 and turn into something a customer can follow. Modelled on WooCommerce's *Advanced Shipment
-Tracking*. Distributed as `justinholtweb/craft-trackr`. **Lite (free) + Pro.**
+Tracking*. Distributed as `justinholtweb/craft-trackr`. **Lite (free) + Pro ($99, $49/year renewal).**
 
 ## Why it exists
 
