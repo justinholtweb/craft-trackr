@@ -161,7 +161,7 @@ class Shipment extends Model
 
         $provider = $this->getProvider();
 
-        return $provider?->name ?? ($this->providerHandle ?? '');
+        return $provider->name ?? ($this->providerHandle ?? '');
     }
 
     /**

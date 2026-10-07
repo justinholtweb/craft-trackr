@@ -12,6 +12,7 @@ use DateTime;
 use DateTimeInterface;
 use justinholtweb\trackr\db\Table;
 use justinholtweb\trackr\events\ShipmentEvent;
+use justinholtweb\trackr\helpers\Urls;
 use justinholtweb\trackr\models\OrderState;
 use justinholtweb\trackr\models\Provider;
 use justinholtweb\trackr\models\Shipment;
@@ -89,7 +90,7 @@ class Shipments extends Component
         }
 
         $shipDate = $this->toDateTime($data['shipDate'] ?? null) ?? new DateTime();
-        $shipmentKey = $this->buildShipmentKey($trackingNumber, $provider?->handle ?? $providerValue, $data);
+        $shipmentKey = $this->buildShipmentKey($trackingNumber, $provider->handle ?? $providerValue, $data);
 
         $record = ShipmentRecord::findOne([
             'orderId' => $order->id,
@@ -112,7 +113,15 @@ class Shipments extends Component
         $record->providerName = $provider?->name
             ?: (($data['providerName'] ?? null) ?: ($providerValue !== '' ? $providerValue : null));
         $record->trackingNumber = $trackingNumber !== '' ? $trackingNumber : null;
-        $record->trackingUrl = trim((string)($data['trackingUrl'] ?? '')) ?: null;
+        // http(s) only. It is rendered as a link in the order panel, on the tracking page and in
+        // emails, and it can arrive from the push API or a CSV: a `javascript:` URL used to be
+        // stored as given and run for whoever clicked the tracking number.
+        $postedUrl = trim((string)($data['trackingUrl'] ?? ''));
+        $record->trackingUrl = Urls::webUrlOrNull($postedUrl);
+
+        if ($postedUrl !== '' && $record->trackingUrl === null) {
+            Craft::warning("Trackr ignored a tracking URL that isn't http(s): " . mb_substr($postedUrl, 0, 100), __METHOD__);
+        }
         $record->service = trim((string)($data['service'] ?? '')) ?: null;
         $record->shipDate = Db::prepareDateForDb($shipDate);
         $record->note = trim((string)($data['note'] ?? '')) ?: null;

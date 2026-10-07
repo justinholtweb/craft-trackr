@@ -1,5 +1,34 @@
 # Release Notes for Trackr
 
+## 5.0.1 - 2026-10-06
+
+> {warning} Pruning and clearing the activity log now needs the new **Prune and clear the activity
+> log** permission; **View the activity log** alone no longer allows it. Tracking URLs that aren't
+> `http://` or `https://` are no longer stored or shown, and a custom carrier's URL template has to
+> be one. If your site is behind a proxy or CDN, set Craft's `trustedHosts` so the tracking page's
+> limit counts real visitors rather than the proxy.
+
+### Security
+- A tracking URL was stored and rendered exactly as it arrived, from the push API, a CSV import or
+  the order screen, so a `javascript:` URL ran for whoever clicked the tracking number in the order
+  panel, the tracking page or an email. Only http(s) URLs are now stored, every link is checked
+  again when it's shown (including ones stored earlier and ones built from a carrier template), and
+  carrier URL and logo templates have to be http(s) to save.
+- Anyone who could read the activity log could prune or clear it, including the API's record of
+  rejected sign-ins. That now needs **Prune and clear the activity log**.
+- Every API request with a bad token wrote a log row, with no limit. A client that gets the token
+  wrong 10 times in a minute is now refused for two minutes before its token is checked, under a
+  site-wide ceiling as well, and rejections are logged once per client per minute.
+- With **Require the email on the order** off, the tracking page accepted sequential order IDs and
+  only counted failed lookups, so it could be used to read every order in turn. The public page no
+  longer looks orders up by ID, and without the email requirement every lookup counts toward the
+  limit. The limit also counted by `getUserIP()`, which believes `X-Forwarded-For` from anyone; it
+  now counts the connecting address, and reads forwarded headers only from proxies in `trustedHosts`.
+
+### Changed
+- The control panel screens use a stylesheet on Craft's CSS variables instead of inline styles and
+  hard-coded colours. Emails and the customer tracking page keep their own styling.
+
 ## 5.0.0
 
 Initial release.

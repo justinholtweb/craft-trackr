@@ -231,6 +231,7 @@ Event::on(Shipments::class, Shipments::EVENT_AFTER_UPDATE_STATUS, function(Shipm
 - **Add, edit and delete tracking** — nested under it
 - **Manage carriers**
 - **View the activity log** (Pro)
+  - **Prune and clear the activity log**
 
 ## License
 

@@ -1,4 +1,5 @@
 {% extends '_layouts/cp' %}
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 {% import '_includes/forms' as forms %}
 
 {% set title = 'Carriers'|t('trackr') %}
@@ -12,12 +13,12 @@
 
 {% block content %}
     {% if not isPro %}
-        <div class="pane" style="border-left: 3px solid #cdd8e4;">
+        <div class="pane trackr-callout">
             <p>{{ 'Trackr Lite ships {count} carriers and lets you switch any of them off. Renaming them, white-labelling them and adding your own is Pro.'|t('trackr', { count: providers|length }) }}</p>
         </div>
     {% endif %}
 
-    <form method="get" action="{{ url('trackr/providers') }}" style="margin-bottom: 16px;">
+    <form class="trackr-mb" method="get" action="{{ url('trackr/providers') }}">
         {{ forms.text({
             name: 'search',
             value: search,

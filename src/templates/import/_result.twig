@@ -1,4 +1,5 @@
 {% extends '_layouts/cp' %}
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 
 {% set title = 'Import results'|t('trackr') %}
 {% set selectedSubnavItem = 'import' %}
@@ -43,7 +44,7 @@
             </tbody>
         </table>
 
-        <div class="buttons" style="margin-top: 16px;">
+        <div class="buttons trackr-mt">
             <a class="btn" href="{{ url('trackr/import') }}">{{ 'Import another'|t('trackr') }}</a>
             <a class="btn submit" href="{{ url('trackr/shipments') }}">{{ 'See shipments'|t('trackr') }}</a>
         </div>

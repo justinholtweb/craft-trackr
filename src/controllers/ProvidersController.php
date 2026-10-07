@@ -4,6 +4,7 @@ namespace justinholtweb\trackr\controllers;
 
 use Craft;
 use craft\web\Controller;
+use justinholtweb\trackr\helpers\Urls;
 use justinholtweb\trackr\models\Provider;
 use justinholtweb\trackr\Plugin;
 use yii\web\NotFoundHttpException;
@@ -81,6 +82,16 @@ class ProvidersController extends Controller
 
         if ($isCustom && !$plugin->isPro()) {
             return $this->failure(Craft::t('trackr', 'Custom carriers are a Pro feature.'));
+        }
+
+        // A carrier's URL template builds the tracking link for every one of its shipments, so it
+        // has to be an http(s) address — placeholders and all — as must its logo.
+        foreach (['url' => Craft::t('trackr', 'tracking URL'), 'logoUrl' => Craft::t('trackr', 'logo URL')] as $param => $label) {
+            $value = trim((string)$request->getBodyParam($param, ''));
+
+            if ($value !== '' && !Urls::isWebUrl($value)) {
+                return $this->failure(Craft::t('trackr', 'The {label} has to start with http:// or https://.', ['label' => $label]));
+            }
         }
 
         if ($isCustom) {

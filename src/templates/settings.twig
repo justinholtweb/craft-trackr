@@ -1,3 +1,4 @@
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 {# Field names carry no `settings[…]` prefix: `craft\base\Plugin::settingsResponse()` runs this
    template's output through `View::namespaceInputs(…, 'settings')`, so a name written as
    `settings[foo]` here posts as `settings[settings][foo]` and saves nothing at all — the screen
@@ -20,7 +21,7 @@
 {% endif %}
 
 {% if not isPro %}
-    <div class="pane" style="border-left: 3px solid #cdd8e4;">
+    <div class="pane trackr-callout">
         <p>
             <strong>{{ 'You’re running Trackr Lite.'|t('trackr') }}</strong>
             {{ 'Item-level tracking, partial shipments, carrier auto-detection, custom carriers, the push API, watched-folder import, delivery notifications and the activity log are Pro. Their settings are shown below but have no effect until you upgrade.'|t('trackr') }}
@@ -78,7 +79,7 @@
                     {{ 'Create a “Delivered” status'|t('trackr') }}
                 </button>
             </div>
-            <p class="light" id="trackr-status-note" style="margin-top: 6px;"></p>
+            <p class="light trackr-mt-xs" id="trackr-status-note"></p>
         </div>
     {% endif %}
 </div>
@@ -155,8 +156,8 @@
         })|md(inlineOnly=true) }}
     </p>
 
-    <div id="trackr-widget-preview" style="background: #fff; padding: 18px; border: 1px dashed #cdd8e4; border-radius: 5px;"></div>
-    <div class="buttons" style="margin-top: 10px;">
+    <div class="trackr-preview" id="trackr-widget-preview"></div>
+    <div class="buttons trackr-mt-s">
         <button type="button" class="btn" id="trackr-refresh-preview">{{ 'Refresh preview'|t('trackr') }}</button>
     </div>
 </div>
@@ -180,7 +181,7 @@
     value: settings.widgetLayout
 }) }}
 
-<div class="flex" style="gap: 14px; flex-wrap: wrap;">
+<div class="flex trackr-row">
     {{ forms.textField({ label: 'Accent'|t('trackr'), id: 'widgetAccentColor', name: 'widgetAccentColor', value: settings.widgetAccentColor, size: 9, class: 'code' }) }}
     {{ forms.textField({ label: 'Text'|t('trackr'), id: 'widgetTextColor', name: 'widgetTextColor', value: settings.widgetTextColor, size: 9, class: 'code' }) }}
     {{ forms.textField({ label: 'Muted text'|t('trackr'), id: 'widgetMutedColor', name: 'widgetMutedColor', value: settings.widgetMutedColor, size: 9, class: 'code' }) }}
@@ -259,7 +260,7 @@
     on: settings.trackingRequireEmail
 }) }}
 
-<div class="flex" style="gap: 14px; flex-wrap: wrap;">
+<div class="flex trackr-row">
     {{ forms.textField({
         label: 'Failed lookups allowed'|t('trackr'),
         id: 'trackingMaxAttempts',

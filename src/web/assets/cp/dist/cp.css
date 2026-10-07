@@ -1,0 +1,27 @@
+/* Trackr — control panel. Craft's variables only; no colours of our own. */
+
+.trackr-callout { border-inline-start: 3px solid var(--gray-200); }
+
+.trackr-toolbar { gap: var(--s); margin-block-end: var(--m); align-items: flex-end; flex-wrap: wrap; }
+.trackr-row { gap: var(--s); align-items: flex-start; flex-wrap: wrap; }
+.trackr-row-end { align-items: flex-end; }
+.trackr-pager { margin-block-start: var(--m); gap: var(--xs); align-items: center; }
+
+.trackr-grow { flex: 1 1 240px; }
+.trackr-col { min-width: 160px; }
+.trackr-col-wide { min-width: 220px; }
+
+.trackr-mt-xs { margin-block-start: var(--xs); }
+.trackr-mt-s { margin-block-start: var(--s); }
+.trackr-mt { margin-block-start: var(--m); }
+.trackr-mb { margin-block-end: var(--s); }
+
+.trackr-preview {
+  padding: var(--l);
+  border: 1px dashed var(--hairline-color);
+  border-radius: var(--large-border-radius);
+  background-color: var(--white);
+}
+
+.trackr-pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.trackr-qty { width: 5em; }

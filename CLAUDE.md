@@ -15,7 +15,8 @@ can follow it. The two are complementary, not competing, and Trackr never depend
 ## Tech Stack
 
 - **PHP 8.2+**, **Craft CMS 5.3+**, **Craft Commerce 5.0+**, Yii2, Twig
-- No build step: no asset bundles, no JS beyond inline `{% js %}` blocks
+- No build step. One CP stylesheet (`web/assets/cp`, Craft's CSS variables), no JS beyond inline
+  `{% js %}` blocks
 
 ## Architecture
 
@@ -81,6 +82,11 @@ never reach "fully shipped".
   strip the `Authorization` header.
 - Uploaded CSVs are stashed under a Trackr-generated UUID; nothing a caller sends can walk out of
   the temp directory.
+- **Tracking URLs are http(s) or nothing** (`helpers\Urls`, 5.0.1): checked in `Shipments::record()`
+  and again wherever one is built or shown, because old rows and carrier templates may hold anything.
+- **Anonymous budgets use `helpers\RateLimit`** (the family's): the tracking page's lookups and the
+  API's failed sign-ins, keyed on the connecting address, never `getUserIP()`. The public page
+  calls `findOrder($n, allowId: false)`; IDs are for the API, imports and the console.
 
 ## Traps found while building this
 
@@ -118,6 +124,8 @@ No local PHP on this Mac. Everything runs inside the plugin-testing container:
 ```sh
 cd ~/Sites/plugin-testing
 ddev exec php /var/www/craft-trackr/tests/integration/checks.php
+docker exec -w /var/www/html ddev-plugin-testing-web php /var/www/craft-trackr/tests/integration/security.php  # 17: URLs, log perms, API shut-out, lookup throttle, CP styles
+docker exec -w /sites/craft-trackr ddev-phpstan-runner-web bash -c 'vendor/bin/phpstan analyse --memory-limit=1G && vendor/bin/ecs check'
 ddev exec bash -c 'find /var/www/craft-trackr/src -name "*.php" -print0 | xargs -0 -n1 php -l'
 ```
 

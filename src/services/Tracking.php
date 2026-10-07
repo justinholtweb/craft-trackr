@@ -46,7 +46,7 @@ class Tracking extends Component
             return ['order' => null, 'error' => Craft::t('trackr', 'Enter the email address on the order.'), 'throttled' => false];
         }
 
-        $order = $this->findOrder($orderNumber);
+        $order = $this->findOrder($orderNumber, false);
 
         // Every failure answers the same way. Telling a stranger that an order number exists but
         // the email is wrong is telling them the order number exists.
@@ -58,6 +58,13 @@ class Tracking extends Component
                 'error' => Craft::t('trackr', 'We couldn’t find an order with those details.'),
                 'throttled' => false,
             ];
+        }
+
+        // Without an email to match, an order number alone opens an order — so every lookup counts
+        // toward the limit, not just the misses, or someone could read every order whose number they
+        // could guess, as long as most of their guesses hit.
+        if (!$settings->trackingRequireEmail) {
+            $this->recordFailure($clientId);
         }
 
         return ['order' => $order, 'error' => null, 'throttled' => false];
@@ -83,8 +90,11 @@ class Tracking extends Component
     /**
      * Match the number against every identifier an order has, because customers copy whichever
      * one the store showed them.
+     *
+     * @param bool $allowId Match an element ID as well. False for the public tracking page, where
+     * a guessable sequence must not be a way in.
      */
-    public function findOrder(string $orderNumber): ?Order
+    public function findOrder(string $orderNumber, bool $allowId = true): ?Order
     {
         $orderNumber = trim($orderNumber);
 
@@ -122,7 +132,9 @@ class Tracking extends Component
             }
         }
 
-        if (ctype_digit($orderNumber)) {
+        // Element IDs are sequential, so a stranger can count through them. Only the trusted
+        // callers — the API, a CSV import, the console — look orders up by ID.
+        if ($allowId && ctype_digit($orderNumber)) {
             $order = Order::find()->id((int)$orderNumber)->isCompleted(true)->status(null)->one();
 
             if ($order instanceof Order) {

@@ -76,6 +76,9 @@ class LogController extends Controller
     public function actionPrune(): Response
     {
         $this->requirePostRequest();
+        // Reading the log and erasing it are different trust: the log holds the API's rejected
+        // sign-ins, and a reader who could clear it could hide a run of token guesses.
+        $this->requirePermission('trackr-manageLog');
 
         $deleted = Plugin::getInstance()->getLog()->prune();
 
@@ -85,6 +88,7 @@ class LogController extends Controller
     public function actionClear(): Response
     {
         $this->requirePostRequest();
+        $this->requirePermission('trackr-manageLog');
 
         $deleted = Plugin::getInstance()->getLog()->clear();
 

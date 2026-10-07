@@ -1,4 +1,5 @@
 {% extends '_layouts/cp' %}
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 {% import '_includes/forms' as forms %}
 
 {% set title = isNew ? 'New carrier'|t('trackr') : provider.name %}
@@ -15,7 +16,7 @@
         {{ hiddenInput('isCustom', provider.isCustom or isNew ? '1' : '') }}
 
         {% if not (provider.isCustom or isNew) %}
-            <div class="pane" style="border-left: 3px solid #cdd8e4;">
+            <div class="pane trackr-callout">
                 <p>{{ 'This is a built-in carrier. What you change here is stored as an override, so a corrected tracking URL in a future Trackr release still reaches you.'|t('trackr') }}</p>
             </div>
         {% endif %}

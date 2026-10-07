@@ -1,7 +1,7 @@
 {
     "name": "justinholtweb/craft-trackr",
     "description": "Shipment tracking for Craft Commerce — tracking numbers on orders from anywhere, tracking links for 100+ carriers, a customer-facing tracking page and widget, CSV import and a push API.",
-    "version": "5.0.0",
+    "version": "5.0.1",
     "type": "craft-plugin",
     "keywords": [
         "craftcms",
@@ -50,5 +50,10 @@
         "documentationUrl": "https://github.com/justinholtweb/craft-trackr/blob/main/README.md",
         "changelogUrl": "https://raw.githubusercontent.com/justinholtweb/craft-trackr/main/CHANGELOG.md",
         "class": "justinholtweb\\trackr\\Plugin"
+    },
+    "require-dev": {
+        "craftcms/ecs": "dev-main",
+        "craftcms/phpstan": "dev-main",
+        "phpstan/phpstan": "^1.12 || ^2.2"
     }
 }

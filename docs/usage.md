@@ -149,7 +149,8 @@ wrong and gets corrected in a Trackr release, the correction still reaches you w
 was rename it.
 
 Tracking URLs are templates. `{tracking_number}` is the one every carrier uses; where a carrier
-needs more, `{postal_code}`, `{phone}`, `{country}` and `{ship_date}` are available.
+needs more, `{postal_code}`, `{phone}`, `{country}` and `{ship_date}` are available. A template,
+like any tracking URL, has to be `http://` or `https://`. Trackr won't save or link anything else.
 
 A carrier Trackr does not recognise is still recorded — the number just shows as plain text.
 A link that 404s is worse than no link.

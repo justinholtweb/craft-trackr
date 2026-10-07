@@ -99,7 +99,7 @@ class Statuses extends Component
             // Commerce marks `userId` required. Tracking arrives from CSV imports, the push API
             // and console commands, none of which have a logged-in user — so the note falls back
             // to the order's customer, and failing that skips validation rather than being lost.
-            $history->userId = Craft::$app->getUser()->getIdentity()?->id ?? $order->customerId;
+            $history->userId = Craft::$app->getUser()->getIdentity()->id ?? $order->customerId;
 
             return Commerce::getInstance()
                 ->getOrderHistories()
@@ -145,7 +145,7 @@ class Statuses extends Component
         }
 
         try {
-            $storeId = $order?->storeId ?? Commerce::getInstance()->getStores()->getCurrentStore()->id;
+            $storeId = $order->storeId ?? Commerce::getInstance()->getStores()->getCurrentStore()->id;
 
             return Commerce::getInstance()->getOrderStatuses()->getOrderStatusByHandle($handle, $storeId);
         } catch (Throwable $e) {

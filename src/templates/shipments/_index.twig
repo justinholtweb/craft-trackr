@@ -1,12 +1,13 @@
 {% extends '_layouts/cp' %}
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 {% import '_includes/forms' as forms %}
 
 {% set title = 'Shipments'|t('trackr') %}
 {% set selectedSubnavItem = 'shipments' %}
 
 {% block content %}
-    <form method="get" action="{{ url('trackr/shipments') }}" class="flex" style="gap: 10px; margin-bottom: 16px; align-items: flex-end; flex-wrap: wrap;">
-        <div style="flex: 1 1 260px;">
+    <form method="get" action="{{ url('trackr/shipments') }}" class="flex trackr-toolbar">
+        <div class="trackr-grow">
             {{ forms.text({
                 name: 'search',
                 value: filters.search,
@@ -14,14 +15,14 @@
                 class: 'text fullwidth'
             }) }}
         </div>
-        <div style="min-width: 170px;">
+        <div class="trackr-col">
             {{ forms.select({
                 name: 'status',
                 value: filters.status,
                 options: [{ label: 'Any status'|t('trackr'), value: '' }]|merge(statusOptions)
             }) }}
         </div>
-        <div style="min-width: 200px;">
+        <div class="trackr-col-wide">
             {{ forms.select({
                 name: 'provider',
                 value: filters.provider,
@@ -80,7 +81,7 @@
 
         {% set pages = (total / perPage)|round(0, 'ceil') %}
         {% if pages > 1 %}
-            <div class="flex" style="margin-top: 16px; gap: 8px; align-items: center;">
+            <div class="flex trackr-pager">
                 {% if page > 1 %}
                     <a class="btn" href="{{ url('trackr/shipments', filters|merge({ page: page - 1 })) }}">{{ '← Previous'|t('trackr') }}</a>
                 {% endif %}

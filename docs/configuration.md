@@ -77,6 +77,12 @@ private, not as a convenience.
 Failed lookups answer identically whatever went wrong. Telling somebody that an order number
 exists but the email is wrong tells them the order number exists.
 
+The page never looks an order up by its internal ID, which counts up one at a time. With the email
+requirement off, every lookup counts toward the limit, successful ones included. A visitor is
+their connecting address. Behind a proxy or CDN, set Craft's `trustedHosts` to your proxies so
+Trackr reads the real address from `X-Forwarded-For`; it never believes that header from anyone
+else.
+
 ## Notifications (Pro)
 
 | Setting | Default |
@@ -110,6 +116,11 @@ The watched folder accepts a Craft alias, so `@storage/trackr-inbox` works.
 **With no token configured the endpoint rejects everything**, enabled or not. Generate a long
 random token; it is compared with `hash_equals`, so length is the only defence that matters.
 
+A client that sends a wrong token 10 times in a minute is refused (HTTP 429) for two minutes
+before its token is even checked, and rejections are logged once per client per minute rather
+than once per request. A `tracking_url` that isn't `http://` or `https://` is ignored: the
+shipment is recorded without it.
+
 ## Logging (Pro)
 
 | Setting | Default |
@@ -128,6 +139,8 @@ in them — set a retention window you can justify, and `php craft trackr/log/pr
 - **Add, edit and delete tracking** — nested under it
 - **Manage carriers**
 - **View the activity log** (Pro)
+  - **Prune and clear the activity log** — nested under it. The log holds the API's rejected
+    sign-ins, so reading it and erasing it are kept apart.
 
 A warehouse user typically wants view plus add/edit, and nothing else.
 

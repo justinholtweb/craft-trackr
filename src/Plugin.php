@@ -265,6 +265,11 @@ class Plugin extends BasePlugin
                         ],
                         'trackr-viewLog' => [
                             'label' => Craft::t('trackr', 'View the activity log'),
+                            'nested' => [
+                                'trackr-manageLog' => [
+                                    'label' => Craft::t('trackr', 'Prune and clear the activity log'),
+                                ],
+                            ],
                         ],
                     ],
                 ];

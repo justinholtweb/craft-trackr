@@ -1,20 +1,23 @@
 {% extends '_layouts/cp' %}
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 {% import '_includes/forms' as forms %}
 
 {% set title = 'Log'|t('trackr') %}
 {% set selectedSubnavItem = 'log' %}
 
 {% block actionButton %}
-    <button type="button" class="btn" id="trackr-prune">{{ 'Prune'|t('trackr') }}</button>
-    <button type="button" class="btn caution" id="trackr-clear">{{ 'Clear'|t('trackr') }}</button>
+    {% if currentUser.can('trackr-manageLog') %}
+        <button type="button" class="btn" id="trackr-prune">{{ 'Prune'|t('trackr') }}</button>
+        <button type="button" class="btn caution" id="trackr-clear">{{ 'Clear'|t('trackr') }}</button>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-    <form method="get" action="{{ url('trackr/log') }}" class="flex" style="gap: 10px; margin-bottom: 16px; align-items: flex-end; flex-wrap: wrap;">
-        <div style="flex: 1 1 240px;">
+    <form method="get" action="{{ url('trackr/log') }}" class="flex trackr-toolbar">
+        <div class="trackr-grow">
             {{ forms.text({ name: 'search', value: filters.search, placeholder: 'Search'|t('trackr'), class: 'text fullwidth' }) }}
         </div>
-        <div style="min-width: 150px;">
+        <div class="trackr-col">
             {{ forms.select({
                 name: 'level',
                 value: filters.level,
@@ -56,7 +59,7 @@
 
         {% set pages = (total / perPage)|round(0, 'ceil') %}
         {% if pages > 1 %}
-            <div class="flex" style="margin-top: 16px; gap: 8px; align-items: center;">
+            <div class="flex trackr-pager">
                 {% if page > 1 %}<a class="btn" href="{{ url('trackr/log', filters|merge({ page: page - 1 })) }}">{{ '← Previous'|t('trackr') }}</a>{% endif %}
                 <span class="light">{{ 'Page {page} of {pages}'|t('trackr', { page: page, pages: pages }) }}</span>
                 {% if page < pages %}<a class="btn" href="{{ url('trackr/log', filters|merge({ page: page + 1 })) }}">{{ 'Next →'|t('trackr') }}</a>{% endif %}
@@ -78,11 +81,11 @@
             .catch(function() { Craft.cp.displayError({{ 'That didn’t work.'|t('trackr')|json_encode|raw }}); });
     }
 
-    document.getElementById('trackr-prune').addEventListener('click', function() {
+    document.getElementById('trackr-prune')?.addEventListener('click', function() {
         run('trackr/log/prune', {{ 'Pruned.'|t('trackr')|json_encode|raw }});
     });
 
-    document.getElementById('trackr-clear').addEventListener('click', function() {
+    document.getElementById('trackr-clear')?.addEventListener('click', function() {
         if (!confirm({{ 'Delete the entire log?'|t('trackr')|json_encode|raw }})) { return; }
         run('trackr/log/clear', {{ 'Cleared.'|t('trackr')|json_encode|raw }});
     });

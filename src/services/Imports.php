@@ -107,7 +107,7 @@ class Imports extends Component
             while (($values = fgetcsv($handle, 0, $delimiter)) !== false) {
                 $lineNumber++;
 
-                if ($values === [null] || $values === []) {
+                if ($values === [null]) {
                     continue;
                 }
 
@@ -439,8 +439,8 @@ class Imports extends Component
             'orderId' => $order?->id,
             'orderReference' => $order?->reference,
             'trackingNumber' => $trackingNumber,
-            'provider' => $provider?->handle ?? $providerValue,
-            'providerLabel' => $provider?->name ?? $providerValue,
+            'provider' => $provider->handle ?? $providerValue,
+            'providerLabel' => $provider->name ?? $providerValue,
             'trackingUrl' => trim((string)($row['trackingUrl'] ?? '')),
             'service' => trim((string)($row['service'] ?? '')),
             'shipDate' => trim((string)($row['shipDate'] ?? '')),

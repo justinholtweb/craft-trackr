@@ -5,6 +5,7 @@ namespace justinholtweb\trackr\services;
 use Craft;
 use craft\base\Component;
 use craft\commerce\elements\Order;
+use justinholtweb\trackr\helpers\Urls;
 use justinholtweb\trackr\models\Provider;
 use justinholtweb\trackr\models\Shipment;
 use justinholtweb\trackr\Plugin;
@@ -218,8 +219,9 @@ class Providers extends Component
     {
         // A URL typed against this one shipment always wins: it is the merchant telling Trackr
         // where the parcel actually is.
+        // Checked again here, not only on the way in: a row stored before 5.0.1 may hold anything.
         if ($shipment->trackingUrl !== null && trim($shipment->trackingUrl) !== '') {
-            return trim($shipment->trackingUrl);
+            return Urls::webUrlOrNull($shipment->trackingUrl);
         }
 
         $provider = $shipment->getProvider();
@@ -236,7 +238,7 @@ class Providers extends Component
             $context = $this->contextForOrder($shipment->orderId, $shipment);
         }
 
-        return $provider->buildUrl($shipment->trackingNumber, $context);
+        return Urls::webUrlOrNull($provider->buildUrl($shipment->trackingNumber, $context));
     }
 
     /**
@@ -250,7 +252,7 @@ class Providers extends Component
 
         $provider = $this->resolve($providerValue) ?? $this->detect($trackingNumber);
 
-        return $provider?->buildUrl($trackingNumber, $context);
+        return Urls::webUrlOrNull($provider?->buildUrl($trackingNumber, $context));
     }
 
     /**
@@ -425,8 +427,8 @@ class Providers extends Component
         }
 
         return [
-            'postal_code' => (string)($address?->postalCode ?? ''),
-            'country' => (string)($address?->countryCode ?? ''),
+            'postal_code' => (string)($address->postalCode ?? ''),
+            'country' => (string)($address->countryCode ?? ''),
             'phone' => $phone,
             'ship_date' => $shipment->shipDate?->format('Y-m-d') ?? '',
         ];

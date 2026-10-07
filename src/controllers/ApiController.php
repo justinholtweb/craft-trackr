@@ -5,6 +5,7 @@ namespace justinholtweb\trackr\controllers;
 use Craft;
 use craft\helpers\Json;
 use craft\web\Controller;
+use justinholtweb\trackr\helpers\RateLimit;
 use justinholtweb\trackr\models\Shipment;
 use justinholtweb\trackr\Plugin;
 use justinholtweb\trackr\twig\TrackrVariable;
@@ -24,6 +25,15 @@ use yii\web\Response;
  */
 class ApiController extends Controller
 {
+    /** Failed sign-ins a client may make in a minute before it is shut out. */
+    private const AUTH_FAILURES_PER_MINUTE = 10;
+
+    /** How long a client that ran out of failed sign-ins is shut out for. */
+    private const AUTH_BLOCK_SECONDS = 120;
+
+    private const AUTH_BLOCK_PREFIX = 'trackr:api-blocked:';
+    private const AUTH_LOGGED_PREFIX = 'trackr:api-auth-logged:';
+
     /**
      * @inheritdoc
      */
@@ -242,13 +252,31 @@ class ApiController extends Controller
             return $this->error(403, 'No API token is configured.');
         }
 
+        // A client that keeps getting the token wrong is shut out for a while before its next
+        // guess is even compared. The token is long enough that guessing is hopeless; the point is
+        // that each rejection used to cost a log row, so a loop of bad requests was a way to fill
+        // the database.
+        $client = RateLimit::client();
+        $blockedKey = self::AUTH_BLOCK_PREFIX . sha1($client);
+
+        if (Craft::$app->getCache()->get($blockedKey)) {
+            return $this->error(429, 'Too many failed attempts. Try again later.');
+        }
+
         $presented = $this->presentedToken();
 
         if ($presented === '' || !hash_equals($settings->getParsedApiToken(), $presented)) {
-            $plugin->getLog()->write('api.auth', 'Rejected an unauthenticated API request', [
-                'level' => 'warning',
-                'source' => Shipment::SOURCE_API,
-            ]);
+            if (!RateLimit::allow('api-auth-fail', self::AUTH_FAILURES_PER_MINUTE)) {
+                Craft::$app->getCache()->set($blockedKey, true, self::AUTH_BLOCK_SECONDS);
+            }
+
+            // One row per client per minute, however many attempts it made in it.
+            if (Craft::$app->getCache()->add(self::AUTH_LOGGED_PREFIX . sha1($client) . ':' . intdiv(time(), 60), true, 120)) {
+                $plugin->getLog()->write('api.auth', 'Rejected an unauthenticated API request', [
+                    'level' => 'warning',
+                    'source' => Shipment::SOURCE_API,
+                ]);
+            }
 
             return $this->error(401, 'Bad or missing token.');
         }

@@ -1,4 +1,5 @@
 {% extends '_layouts/cp' %}
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 {% import '_includes/forms' as forms %}
 
 {% set title = 'Import'|t('trackr') %}
@@ -56,7 +57,7 @@
                     </tbody>
                 </table>
 
-                <form method="post" accept-charset="UTF-8" style="margin-top: 18px;">
+                <form class="trackr-mt" method="post" accept-charset="UTF-8">
                     {{ csrfInput() }}
                     {{ actionInput('trackr/import/commit') }}
                     {{ hiddenInput('token', token) }}
@@ -121,7 +122,7 @@
                 </tbody>
             </table>
 
-            <p class="light" style="margin-top: 10px;">
+            <p class="light trackr-mt-s">
                 {{ 'Status values: {statuses}'|t('trackr', { statuses: statuses|keys|join(', ') }) }}
             </p>
         </div>

@@ -53,7 +53,9 @@ class TrackController extends Controller
             $result = $tracking->lookup(
                 $request->getParam('orderNumber'),
                 $request->getParam('email'),
-                $request->getUserIP()
+                // The connecting address, not getUserIP(): that believes X-Forwarded-For from anyone,
+                // so a new header was a fresh allowance of guesses.
+                \justinholtweb\trackr\helpers\RateLimit::client()
             );
 
             $order = $result['order'];

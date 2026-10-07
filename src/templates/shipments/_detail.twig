@@ -1,4 +1,5 @@
 {% extends '_layouts/cp' %}
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 {% import '_includes/forms' as forms %}
 
 {% set title = shipment.trackingNumber ?? 'Shipment'|t('trackr') %}
@@ -77,8 +78,8 @@
         <div class="pane">
             <h2>{{ 'Update'|t('trackr') }}</h2>
 
-            <div class="flex" style="gap: 12px; align-items: flex-end; flex-wrap: wrap;">
-                <div style="min-width: 180px;">
+            <div class="flex trackr-row trackr-row-end">
+                <div class="trackr-col">
                     {{ forms.selectField({
                         label: 'Delivery status'|t('trackr'),
                         id: 'trackr-status',
@@ -86,7 +87,7 @@
                         value: shipment.status
                     }) }}
                 </div>
-                <div style="flex: 1 1 240px;">
+                <div class="trackr-grow">
                     {{ forms.textField({
                         label: 'Detail'|t('trackr'),
                         id: 'trackr-status-detail',

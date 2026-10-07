@@ -1,4 +1,5 @@
 {% extends '_layouts/cp' %}
+{% do view.registerAssetBundle('justinholtweb\\trackr\\web\\assets\\cp\\CpAsset') %}
 
 {% set title = entry.summary ?? 'Log entry'|t('trackr') %}
 {% set selectedSubnavItem = 'log' %}
@@ -35,14 +36,14 @@
     {% if entry.message %}
         <div class="pane">
             <h2>{{ 'Message'|t('trackr') }}</h2>
-            <pre style="white-space: pre-wrap; word-break: break-word;">{{ entry.message }}</pre>
+            <pre class="trackr-pre">{{ entry.message }}</pre>
         </div>
     {% endif %}
 
     {% if entry.payload %}
         <div class="pane">
             <h2>{{ 'Payload'|t('trackr') }}</h2>
-            <pre style="white-space: pre-wrap; word-break: break-word;">{{ entry.payload }}</pre>
+            <pre class="trackr-pre">{{ entry.payload }}</pre>
         </div>
     {% endif %}
 {% endblock %}
